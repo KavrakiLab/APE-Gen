@@ -59,7 +59,7 @@
 ```
 usage: APE-Gen.py [-h] [-n NUM_CORES] [-l NUM_LOOPS] [-t RCD_DIST_TOL] [-r]
                   [-d] [-p] [-a ANCHOR_TOL] [-o] [-g NUM_ROUNDS]
-                  [-b {receptor_only,pep_and_recept}]
+                  [-b {receptor_only,pep_and_recept}] [-s]
                   peptide_input receptor_class
 
 Anchored Peptide-MHC Ensemble Generator
@@ -102,6 +102,8 @@ optional arguments:
                         conformation across different rounds (choose either
                         'receptor_only' or 'pep_and_recept') (default:
                         receptor_only)
+  -s, --min_with_smina  Minimize with SMINA instead of the default Vinardo
+                        (default: False)
 ```
 
 
