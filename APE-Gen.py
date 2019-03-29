@@ -78,6 +78,7 @@ def main():
     parser.add_argument("-o", "--score_with_openmm", action="store_true", help='Rescore full conformations with openmm (AMBER)')
     parser.add_argument("-g", "--num_rounds", type=int, default=1, help='Number of rounds to perform.')
     parser.add_argument("-b", "--pass_type", type=str, default='receptor_only', choices=['receptor_only', 'pep_and_recept'], help="When using multiple rounds, pass best scoring conformation across different rounds (choose either 'receptor_only' or 'pep_and_recept')")
+    parser.add_argument("-s", "--min_with_smina", action="store_true", help='Minimize with SMINA instead of the default Vinardo')
 
     args = parser.parse_args()
 
@@ -94,6 +95,7 @@ def main():
     score_with_openmm = args.score_with_openmm
     num_rounds = args.num_rounds
     pass_type = args.pass_type
+    min_with_smina = args.min_with_smina
 
     print "Preparing peptide and MHC"
 
@@ -283,7 +285,7 @@ def main():
 
             threads = []
             for loop_indices in array_splits:
-                t = RefineThread(loop_indices, len(peptide_sequence), num_loops, doReceptorMinimization, flexible_residues)
+                t = RefineThread(loop_indices, len(peptide_sequence), num_loops, doReceptorMinimization, flexible_residues, min_with_smina)
                 threads.append(t)
                 t.start()
             for t in threads: t.join()
@@ -580,12 +582,16 @@ def main():
 
     sys.exit(0)
 
-def rescore_with_smina(models, receptor, output_loc, doReceptorMinimization, flexible_residues):
+def rescore_with_smina(models, receptor, output_loc, doReceptorMinimization, flexible_residues, useSMINA):
 
-    if doReceptorMinimization:
+    if not useSMINA and doReceptorMinimization:
         call([smina_location + " --scoring vinardo --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)
-    else:
-        call([smina_location + " --scoring vinardo --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)       
+    elif not useSMINA and not doReceptorMinimization:
+        call([smina_location + " --scoring vinardo --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)  
+    elif useSMINA and doReceptorMinimization:
+        call([smina_location + " --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)
+    elif useSMINA and not doReceptorMinimization:
+        call([smina_location + " --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)       
 
 def process_smina(ref, data_name, confs_name, native, min_model_index, debug):
 
@@ -655,12 +661,13 @@ def get_conf(conf_loc, ref_top, selection, debug):
 
 class RefineThread(Thread):
 
-    def __init__(self, loop_indices, pep_len, num_loops, doReceptorMinimization, flexible_residues):
+    def __init__(self, loop_indices, pep_len, num_loops, doReceptorMinimization, flexible_residues, useSMINA):
         self.loop_indices = loop_indices
         self.pep_len = pep_len
         self.num_loops = num_loops
         self.doReceptorMinimization = doReceptorMinimization
         self.flexible_residues = flexible_residues
+        self.useSMINA = useSMINA
 
         if pep_len < 10: self.last_anchor = "\"C   \"" + str(pep_len)
         else:            self.last_anchor = "\"C  \""  + str(pep_len)
@@ -709,7 +716,7 @@ class RefineThread(Thread):
             call(["sed '/REMARK/d' " + full_model + " | sed '/TER/d' | sed '/END/d' >> " + folder_name + "/all_models.pdb"], shell=True)
             call(["echo \"ENDMDL\" >> " + folder_name + "/all_models.pdb"], shell=True)
 
-        rescore_with_smina(folder_name + "/all_models.pdb", "../../../receptor.pdb", folder_name, self.doReceptorMinimization, self.flexible_residues)
+        rescore_with_smina(folder_name + "/all_models.pdb", "../../../receptor.pdb", folder_name, self.doReceptorMinimization, self.flexible_residues, self.useSMINA)
 
 if __name__ == "__main__":
     main()
