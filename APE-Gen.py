@@ -551,6 +551,8 @@ def main():
 
                 numTries = 10
 
+                min_filenames = []
+                energies = []
                 for i in range(1, len(filenames)+1):
                     complex_model = "complex-" + str(i).zfill( len(str(len(filenames))) ) + ".pdb"
 
@@ -566,7 +568,10 @@ def main():
 
                         print i, filenames[i-1], j, energy
 
-                        if energy < 0: break
+                        if energy < 0: 
+                        	min_filenames.append("min-" + complex_model)
+                        	energies.append(energy)
+                        	break
                         else:
                             if j == (numTries-1):
                                 call(["rm " + complex_model + " min-" + complex_model], shell=True)
@@ -574,6 +579,9 @@ def main():
                 call(["mkdir openmm-minimized"], shell=True)
                 call(["rm complex-*.pdb"], shell=True)
                 call(["mv min-*.pdb openmm-minimized/"], shell=True)
+                call(["cp openmm-minimized/" + min_filenames[np.argmin(energies)] + " ../openmm_min_energy_system.pdb"], shell=True)
+
+                np.savez_compressed("openmm-minimized/openmm_energies.npz", min_filenames=min_filenames, energies=energies)
 
                 os.chdir("..")
     
