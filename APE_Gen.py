@@ -287,7 +287,7 @@ def main(args):
 
             threads = []
             for loop_indices in array_splits:
-                t = RefineThread(loop_indices, len(peptide_sequence), num_loops, doReceptorMinimization, flexible_residues, min_with_smina)
+                t = RefineThread(loop_indices, len(peptide_sequence), num_loops, doReceptorMinimization, flexible_residues, min_with_smina, debug)
                 threads.append(t)
                 t.start()
             for t in threads: t.join()
@@ -671,13 +671,14 @@ def get_conf(conf_loc, ref_top, selection, debug):
 
 class RefineThread(Thread):
 
-    def __init__(self, loop_indices, pep_len, num_loops, doReceptorMinimization, flexible_residues, useSMINA):
+    def __init__(self, loop_indices, pep_len, num_loops, doReceptorMinimization, flexible_residues, useSMINA, debug):
         self.loop_indices = loop_indices
         self.pep_len = pep_len
         self.num_loops = num_loops
         self.doReceptorMinimization = doReceptorMinimization
         self.flexible_residues = flexible_residues
         self.useSMINA = useSMINA
+        self.debug = debug
 
         if pep_len < 10: self.last_anchor = "\"C   \"" + str(pep_len)
         else:            self.last_anchor = "\"C  \""  + str(pep_len)
@@ -686,7 +687,7 @@ class RefineThread(Thread):
 
     def run(self):
         for i in self.loop_indices:
-            print(i)
+            if self.debug: print(i)
 
             model_name_i = "model-" + str(i).zfill( len(str(self.num_loops)) ) + ".pdb"
             partial_name_i = "partial" + str(i).zfill( len(str(self.num_loops)) ) + ".pdbqt"
