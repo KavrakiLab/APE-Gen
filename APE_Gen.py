@@ -52,7 +52,7 @@ one_letter_code = {'ARG':'R', 'HIS':'H', 'LYS':'K', 'ASP':'D', 'GLU':'E', \
 
 three_letter_code  = {v: k for k, v in one_letter_code.items()}
 
-defaults_location = sys.path[0]
+defaults_location = os.path.dirname(os.path.abspath(__file__)) #sys.path[0]
 pymol_location = "~/pymol/bin/pymol"
 RCD_location = "rcd"
 smina_location = "smina"
