@@ -63,7 +63,7 @@ def main(args):
 
     parser = argparse.ArgumentParser(description="Anchored Peptide-MHC Ensemble Generator", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('peptide_input', type=str, nargs=1, help='Sequence of peptide to dock or pdbfile of crystal structure')
-    parser.add_argument('receptor_class', type=str, nargs=1, help='Class descriptor of MHC receptor. Use REDOCK along with crystal input to perform redocking.')
+    parser.add_argument('receptor_class', type=str, nargs=1, help='Class descriptor of MHC receptor. Use REDOCK along with crystal input to perform redocking. Or pass a PDB file with receptor')
 
     parser.add_argument("-n", "--num_cores", type=int, default=8, help='Number of cores to use for RCD and smina computations.')
     parser.add_argument("-l", "--num_loops", type=int, default=100, help='Number of loops to generate with RCD. (Note that the final number of sampled conformations may be less due to steric clashes.')
@@ -149,8 +149,10 @@ def main(args):
 
     call(["cp " + defaults_location + "/templates/" + peptide_template + " ."], shell=True) 
 
-    # if receptor allotype is specified, read in receptor templates
-    if not performRedock:
+    # if pdb is provided, use MHC inside
+    # elseif receptor allotype is specified, read in receptor templates
+    if receptor_class[-4:] == ".pdb": receptor_template = receptor_class
+    elif not performRedock:
         receptor_class_templates = {}
         f = open(defaults_location + "/receptor-class-templates.txt")
         for line in f:
