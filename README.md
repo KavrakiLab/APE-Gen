@@ -6,7 +6,7 @@
 
 - All that is required for input is the sequence of the peptide and the MHC allotype name (if supported)
 
-- Minimal example: `python APE-Gen.py QFKDNVILL HLA-A*24:02`
+- Minimal example: `python APE_Gen.py QFKDNVILL HLA-A*24:02`
 
 - For a peptide with "n" residues, APE-Gen will use a template of another peptide with "n" residues to place the anchor residues in the correct pocket of the MHC
   - to change the template, modify `n-mer-templates.txt` for the corresponding n-mer, then add the template pdb file (peptide and MHC) to the `templates/` folder
