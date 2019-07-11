@@ -8,10 +8,10 @@ from pymol import cmd
 import sys
 
 pdb, selection, mutant, output_name = sys.argv[-4:]
-print("file:", pdb)
-print("selection:", selection)
-print("mutating to:", mutant)
-print("output name:", output_name)
+print "file:", pdb
+print "selection:", selection
+print "mutating to:", mutant
+print "output name:", output_name
 
 cmd.load(pdb, "file")
 

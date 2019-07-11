@@ -14,15 +14,15 @@ def main():
 
     filename = sys.argv[1]
 
-    print("Opening:", filename)
+    print "Opening:", filename
 
     pdb = PDBFile(filename)
     top = pdb.getTopology()
     positions = np.array(pdb.positions) #pdb.getPositions(asNumpy=True)
     numAtoms = len(positions)
 
-    print("Number of atoms:", numAtoms)
-    print("Number of residues:", top.getNumResidues())
+    print "Number of atoms:", numAtoms
+    print "Number of residues:", top.getNumResidues()
 
     positions = np.reshape(positions, (3*numAtoms,1))
 
@@ -67,7 +67,7 @@ def main():
 
     printForces(simulation)
 
-    print("Minimizing energy ... ")
+    print "Minimizing energy ... "
     simulation.minimizeEnergy()
 
     printForces(simulation)
@@ -90,9 +90,9 @@ def printForces(simulation):
     for i in range(simulation.system.getNumForces()):
         f_name = simulation.system.getForce(i).__class__.__name__
         s0 = simulation.context.getState(getEnergy=True, groups=2**i)
-        print(f_name + ": " + str(s0.getPotentialEnergy()))
+        print f_name + ": " + str(s0.getPotentialEnergy())
 
-    print("total:", simulation.context.getState(getEnergy=True).getPotentialEnergy())
+    print "total:", simulation.context.getState(getEnergy=True).getPotentialEnergy()
 
 
 if __name__ == "__main__":

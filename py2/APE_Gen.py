@@ -50,7 +50,7 @@ one_letter_code = {'ARG':'R', 'HIS':'H', 'LYS':'K', 'ASP':'D', 'GLU':'E', \
                   'GLY':'G', 'PRO':'P', 'ALA':'A', 'VAL':'V', 'ILE':'I', \
                   'LEU':'L', 'MET':'M', 'PHE':'F', 'TYR':'Y', 'TRP':'W'}
 
-three_letter_code  = {v: k for k, v in one_letter_code.items()}
+three_letter_code  = {v: k for k, v in one_letter_code.iteritems()}
 
 defaults_location = sys.path[0]
 pymol_location = "~/pymol/bin/pymol"
@@ -97,7 +97,7 @@ def main(args):
     pass_type = args.pass_type
     min_with_smina = args.min_with_smina
 
-    print("Preparing peptide and MHC")
+    print "Preparing peptide and MHC"
 
     native_loc = None
     performRedock = False
@@ -113,8 +113,8 @@ def main(args):
         seq = ''
         for s in seq_arr: seq += s
         peptide_sequence = seq
-        print("Peptide sequence: " + peptide_sequence)
-        print("Receptor class: " + receptor_class)
+        print "Peptide sequence: " + peptide_sequence
+        print "Receptor class: " + receptor_class
 
         if receptor_class == "REDOCK":
             performRedock = True
@@ -124,14 +124,14 @@ def main(args):
     else:
         peptide_sequence = peptide_input
         for resi in peptide_sequence:
-            if resi not in list(three_letter_code.keys()):
-                print("Unrecognized one letter residue code: " + resi)
+            if resi not in three_letter_code.keys():
+                print "Unrecognized one letter residue code: " + resi
                 sys.exit(0)
-        print("Peptide sequence: " + peptide_sequence)
-        print("Receptor class: " + receptor_class)
+        print "Peptide sequence: " + peptide_sequence
+        print "Receptor class: " + receptor_class
 
         if receptor_class == "REDOCK":
-            print("Must input native pdb as peptide input in order to perform redocking.")
+            print "Must input native pdb as peptide input in order to perform redocking."
             sys.exit(0)
 
     # retrieve peptide template
@@ -141,10 +141,10 @@ def main(args):
         line_arr = line.split()
         n_mer_templates[line_arr[0]] = line_arr[1]
     f.close()
-    if str(len(peptide_sequence)) in list(n_mer_templates.keys()):
+    if str(len(peptide_sequence)) in n_mer_templates.keys():
         peptide_template = n_mer_templates[str(len(peptide_sequence))]
     else:
-        print(str(len(peptide_sequence)) + "-mers are not implemented yet. Check n-mer-templates.txt")
+        print str(len(peptide_sequence)) + "-mers are not implemented yet. Check n-mer-templates.txt"
         sys.exit(0)
 
     call(["cp " + defaults_location + "/templates/" + peptide_template + " ."], shell=True) 
@@ -157,10 +157,10 @@ def main(args):
             line_arr = line.split()
             receptor_class_templates[line_arr[0]] = line_arr[1]
         f.close()
-        if receptor_class in list(receptor_class_templates.keys()):
+        if receptor_class in receptor_class_templates.keys():
             receptor_template = receptor_class_templates[receptor_class]
         else:
-            print(receptor_class + " not yet implemented as a receptor class. Check receptor-class-templates.txt")
+            print receptor_class + " not yet implemented as a receptor class. Check receptor-class-templates.txt"
             sys.exit(0)
         call(["cp " + defaults_location + "/templates/" + receptor_template + " ."], shell=True)
 
@@ -190,7 +190,7 @@ def main(args):
                 peptide_template = "min_energy_system.pdb"
             call(["sed -i \"s/          /           /g\" min_energy_system.pdb"], shell=True) # fix annoying openbabel warning
 
-        print("Aligning peptide anchors to MHC pockets")
+        print "Aligning peptide anchors to MHC pockets"
 
         call([pymol_location + " -qc " + defaults_location + "/align.py " + peptide_template + " " + receptor_template], shell=True)
 
@@ -244,15 +244,15 @@ def main(args):
         f_new.close()
         call(["cp anchors.pdb peptide.pdb"], shell=True)
 
-        print("Sampling peptide backbone")
+        print "Sampling peptide backbone"
         if os.path.exists("RCD"):
-            print("Found RCD folder. Skipping this step")
+            print "Found RCD folder. Skipping this step"
             ref = md.load("confs_top.pdb")
             ref_top = ref.top
             if native_loc != None:
-                print("Native crystal found!")
+                print "Native crystal found!"
                 native = get_conf(native_loc, ref_top, "element != H", debug)
-                print(native)
+                print native
             else: native = None
             call(["cp confs_top.pdb peptide.pdb"], shell=True)
             call(["sed -i \"s/          /           /g\" peptide.pdb"], shell=True) # fix annoying openbabel warning
@@ -273,14 +273,14 @@ def main(args):
             #call([mpi_location + " " + str(num_cores) + " " + RCD_location + " -x dunbrack.bin --loco loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
             call([RCD_location + " -x dunbrack.bin --loco loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
 
-            print("Organizing RCD results")
+            print "Organizing RCD results"
 
             call(["mkdir models; cp RCD/anchored_pMHC_closed.pdb models/"], shell=True)        
             os.chdir("models")
             
             call([vina_location + " --input anchored_pMHC_closed.pdb --ligand partial"], shell=True)
 
-            array_splits = np.array_split(list(range(1, num_loops+1)), num_cores)
+            array_splits = np.array_split(range(1, num_loops+1), num_cores)
             folder_names = [str(s[0]) for s in array_splits]
 
             threads = []
@@ -313,7 +313,7 @@ def main(args):
                     f_temp.write(line)
                 elif first_word == 'ENDMDL':
                     model_index += 1
-                    if debug: print("-------------------", model_index)
+                    if debug: print "-------------------", model_index
                     f_temp.close()
                     if hasHETATM:
                         hasHETATM = False
@@ -333,16 +333,16 @@ def main(args):
                     if line.split()[1] == 'minimizedAffinity': energy = float(line.split()[2])
             f.close()   
 
-            print(min_energy)
+            print min_energy
             ref.save_pdb("../../../confs_top.pdb")
             ref = md.load("../../../confs_top.pdb", atom_indices=ref.top.select("element != H"))
             ref.save_pdb("../../../confs_top.pdb")
             ref_top = ref.top
 
             if native_loc != None:
-                print("Native crystal found!")
+                print "Native crystal found!"
                 native = get_conf("../../../" + native_loc, ref_top, "element != H", debug)
-                print(native)
+                print native
             else:
                 native = None
 
@@ -357,19 +357,19 @@ def main(args):
 
 
        
-        print("Loading sampled conformations")
+        print "Loading sampled conformations"
         confs = md.load("confs.dcd", top="confs_top.pdb")
         energies = np.load("conf_data.npz")['energies']
         model_indices = np.load("conf_data.npz")['model_indices']
         min_model_index = np.load("conf_data.npz")['min_model_index']
         
-        print("Num full confs:", len(confs))
+        print "Num full confs:", len(confs)
         all_confs = confs
         all_energies = energies
 
-        print("Saving filtered peptide confs")
+        print "Saving filtered peptide confs"
         if os.path.exists("peptide_confs.pdb"):
-            print("Found peptide_confs.pdb, Please move to recompute.")
+            print "Found peptide_confs.pdb, Please move to recompute."
         else:
             reference_bound = md.load("aln-" + peptide_template)
             ref_backbone = reference_bound.top.select("chainid == 2 and name == 'CA'")
@@ -402,7 +402,7 @@ def main(args):
                 #print i, d_a1, d_a2, energies[i]
 
                 if d_a1 < anchor_tol and d_a2 < anchor_tol and d_a3 < anchor_tol and d_a4 < anchor_tol:
-                    print(i)
+                    print i
                     filtered_energies.append(energies[i])
                     filtered_indices.append(i) # indices used for naming full system confs
 
@@ -413,7 +413,7 @@ def main(args):
                         mdtraj_confs += md.load("temp.pdb")
 
             
-            print("Average filtered energy:", np.mean(filtered_energies))
+            print "Average filtered energy:", np.mean(filtered_energies)
 
             mdtraj_confs.save_pdb("peptide_confs.pdb")
             np.savez_compressed("filtered_energies.npz", filtered_energies=filtered_energies, filtered_indices=filtered_indices)
@@ -421,19 +421,19 @@ def main(args):
 
         filtered_indices = np.load("filtered_energies.npz")["filtered_indices"]
         filtered_energies = np.load("filtered_energies.npz")["filtered_energies"]
-        print("Num filtered confs:", len(filtered_indices))
-        print("Average filtered energy:", np.mean(filtered_energies))
+        print "Num filtered confs:", len(filtered_indices)
+        print "Average filtered energy:", np.mean(filtered_energies)
 
         if saveFullConfs:
-            print("Saving complete peptide-HLA complexes")
+            print "Saving complete peptide-HLA complexes"
             if os.path.exists("full_system_confs"):
-                print("Found full_system_confs/ folder. Please move to recompute.")
+                print "Found full_system_confs/ folder. Please move to recompute."
             else:
                 if not doReceptorMinimization:
                     call(["mkdir full_system_confs"], shell=True)
                     for i, conf in enumerate(all_confs):
                         if i not in filtered_indices: continue
-                        print(i)
+                        print i
                         conf.save_pdb("temp.pdb")
                         call(["sed -i \"s/ A  / C  /g\" temp.pdb"], shell=True)
                         call(["cat receptor.pdb temp.pdb | sed \"/MODEL/d\" | sed \"/ENDMDL/d\" | sed \"/END/d\" > system.pdb"], shell=True)
@@ -464,7 +464,7 @@ def main(args):
                     
                     for j, conf in enumerate(all_confs):
                         if j not in filtered_indices: continue
-                        print(j)
+                        print j
                         conf.save_pdb("temp.pdb")
                         call(["sed -i \"s/ A  / C  /g\" temp.pdb"], shell=True)
 
@@ -487,7 +487,7 @@ def main(args):
                                 element_offset["N"] = 1
                                 element_offset["O"] = 1
                             orig_atoms_in_residue_indices = orig.top.select("resid == " + str(residue_index) + " and type == " + element_type)
-                            if not element_type in list(element_offset.keys()):
+                            if not element_type in element_offset.keys():
                                 orig.xyz[0, orig_atoms_in_residue_indices[0], :] = temp.xyz[0, i, :]
                                 element_offset[element_type] = 1
                             else:
@@ -515,34 +515,34 @@ def main(args):
         alpha_carbon_atoms = all_confs.top.select("name == 'CA'")
         if native != None:
             rmsd_to_native = md.rmsd(all_confs, native, 0) * 10
-            print("Min RMSD to native: ", np.min(rmsd_to_native), filtered_indices[np.argmin(rmsd_to_native)])
+            print "Min RMSD to native: ", np.min(rmsd_to_native), filtered_indices[np.argmin(rmsd_to_native)]
             if saveFullConfs: call(["cp full_system_confs/" + str(filtered_indices[np.argmin(rmsd_to_native)]) + ".pdb ./minRMSD.pdb"], shell=True)
-            print("Energy of MinRMSD: ", all_energies[np.argmin(rmsd_to_native)])
-            print("selected binding mode to native: ", md.rmsd(ref, native, 0)[0] * 10)
+            print "Energy of MinRMSD: ", all_energies[np.argmin(rmsd_to_native)]
+            print "selected binding mode to native: ", md.rmsd(ref, native, 0)[0] * 10
             rmsds = md.rmsd(all_confs, native, 0) * 10
             rmsds_sort = rmsds[np.argsort(all_energies)]
             pk_unnorm = np.exp(-np.arange(1, len(rmsds)+1))
             pk = pk_unnorm / pk_unnorm.sum()
-            print("E-RMSD: ", np.dot(rmsds_sort, pk)) # try computing for just the filtered confs?
+            print "E-RMSD: ", np.dot(rmsds_sort, pk) # try computing for just the filtered confs?
 
             carmsd_to_native = md.rmsd(all_confs, native, 0, atom_indices=alpha_carbon_atoms, ref_atom_indices=alpha_carbon_atoms) * 10
-            print("alpha_carbon_MinRMSD: ", np.min(carmsd_to_native), filtered_indices[np.argmin(carmsd_to_native)])
+            print "alpha_carbon_MinRMSD: ", np.min(carmsd_to_native), filtered_indices[np.argmin(carmsd_to_native)]
             if saveFullConfs: call(["cp full_system_confs/" + str(filtered_indices[np.argmin(carmsd_to_native)]) + ".pdb ./minCaRMSD.pdb"], shell=True)
-            print("Energy of alpha_carbon_MinRMSD: ", all_energies[np.argmin(carmsd_to_native)])
-            print("selected binding mode to native alpha_carbon_rmsd: ", md.rmsd(ref, native, 0, atom_indices=alpha_carbon_atoms, ref_atom_indices=alpha_carbon_atoms)[0] * 10)
+            print "Energy of alpha_carbon_MinRMSD: ", all_energies[np.argmin(carmsd_to_native)]
+            print "selected binding mode to native alpha_carbon_rmsd: ", md.rmsd(ref, native, 0, atom_indices=alpha_carbon_atoms, ref_atom_indices=alpha_carbon_atoms)[0] * 10
             rmsds = md.rmsd(all_confs, native, 0, atom_indices=alpha_carbon_atoms, ref_atom_indices=alpha_carbon_atoms) * 10
             rmsds_sort = rmsds[np.argsort(all_energies)]
             pk_unnorm = np.exp(-np.arange(1, len(rmsds)+1))
             pk = pk_unnorm / pk_unnorm.sum()
-            print("E-alpha_carbon_RMSD: ", np.dot(rmsds_sort, pk))
-        print("energy of selected binding mode:", np.min(all_energies), filtered_indices[np.argmin(all_energies)])
+            print "E-alpha_carbon_RMSD: ", np.dot(rmsds_sort, pk)
+        print "energy of selected binding mode:", np.min(all_energies), filtered_indices[np.argmin(all_energies)]
         if saveFullConfs: call(["cp full_system_confs/" + str(filtered_indices[np.argmin(all_energies)]) + ".pdb ./min_energy_system.pdb"], shell=True)
 
         if score_with_openmm:
 
-            print("Scoring/Minimizing with OpenMM ...")
+            print "Scoring/Minimizing with OpenMM ..."
             if os.path.exists("full_system_confs/openmm-minimized"):
-                print("Found full_system_confs/openmm-minimized folder. Please move to recompute.")
+                print "Found full_system_confs/openmm-minimized folder. Please move to recompute."
             else:
 
                 os.chdir("full_system_confs/")
@@ -566,7 +566,7 @@ def main(args):
                             if line_arr[0] == "total:": energy = float(line_arr[1]) # should go through here twice, second appearance is kept
                         f.close()
 
-                        print(i, filenames[i-1], j, energy)
+                        print i, filenames[i-1], j, energy
 
                         if energy < 0: 
                         	min_filenames.append("min-" + complex_model)
@@ -617,7 +617,7 @@ def process_smina(ref, data_name, confs_name, native, min_model_index, debug):
             f_temp.write(line)
         elif first_word == 'ENDMDL':
             model_index += 1
-            if debug: print("-------------------", model_index)
+            if debug: print "-------------------", model_index
             f_temp.close()
             call(["sort -k6 -n temp.pdb > temp_sorted.pdb"], shell=True)
             try:
@@ -634,7 +634,7 @@ def process_smina(ref, data_name, confs_name, native, min_model_index, debug):
     confs = ref[1:]
     ref = ref[0]
 
-    print(confs)
+    print confs
 
     np.savez_compressed(data_name, energies=energies, model_indices=model_indices, min_model_index=min_model_index) #, rmsd_to_native=rmsd_to_native)
     confs.save_dcd(confs_name)
@@ -649,8 +649,8 @@ def get_conf(conf_loc, ref_top, selection, debug):
     x = md.load(conf_loc, atom_indices=x_top.select(selection))
 
     if x.top.n_atoms != ref_top.n_atoms and debug: 
-        print(x.top.n_atoms)
-        print(ref_top.n_atoms)
+        print x.top.n_atoms
+        print ref_top.n_atoms
         raise ValueError('x.top.n_atoms != ref_top.n_atoms')
 
     x_atoms = [a for a in x.top.atoms]
@@ -684,7 +684,7 @@ class RefineThread(Thread):
 
     def run(self):
         for i in self.loop_indices:
-            print(i)
+            print i
 
             model_name_i = "model-" + str(i).zfill( len(str(self.num_loops)) ) + ".pdb"
             partial_name_i = "partial" + str(i).zfill( len(str(self.num_loops)) ) + ".pdbqt"

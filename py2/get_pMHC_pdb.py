@@ -9,7 +9,7 @@ import sys
 pdbcode = sys.argv[1]
 
 if len(pdbcode) != 4:
-	print("Please enter a correct 4 letter pdbid")
+	print "Please enter a correct 4 letter pdbid"
 	sys.exit(0)
 
 call("pdbfixer --pdbid " + pdbcode + " --output=temp.pdb --add-atoms=heavy --keep-heterogens=none", shell=True)
@@ -53,7 +53,7 @@ for i, c in enumerate(chains):
 fixer.removeChains(chains_to_remove)
 
 chains = fixer.topology.chains()
-print(chains)
+print chains
 chain_lengths = []
 for c in chains:
 	num_residues = len(list(c.residues()))
