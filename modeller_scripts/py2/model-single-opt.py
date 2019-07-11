@@ -43,7 +43,7 @@ a.max_molpdf = 1e6
 a.make()
 
 # Get a list of all successfully built models from a.outputs
-ok_models = [x for x in a.outputs if x['failure'] is None]
+ok_models = filter(lambda x: x['failure'] is None, a.outputs)
 
 # Rank the models by DOPE score
 key = 'DOPE score'
@@ -51,4 +51,4 @@ ok_models.sort(lambda a,b: cmp(a[key], b[key]))
 
 # Get top model
 m = ok_models[0]
-print("Top model: %s (DOPE score %.100f)" % (m['name'], m[key]))
+print "Top model: %s (DOPE score %.100f)" % (m['name'], m[key])
