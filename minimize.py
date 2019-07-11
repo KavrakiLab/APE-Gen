@@ -43,10 +43,9 @@ def main():
     force.addPerParticleParameter("z0")
     protein_particles = mdtraj.load(filename).top.select("backbone")
 
-
     particle_indices = []
     for protein_particle in protein_particles:
-        particle_indices.append(force.addParticle(protein_particle, modeller.positions[protein_particle]) )
+        particle_indices.append(force.addParticle(int(protein_particle), modeller.positions[protein_particle]) )
     system.addForce(force)
 
 
