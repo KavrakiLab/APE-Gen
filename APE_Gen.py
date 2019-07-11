@@ -59,7 +59,7 @@ smina_location = "smina"
 vina_location = "vina_split"
 pdbfixer_location = "pdbfixer"
 
-def main():
+def main(args):
 
     parser = argparse.ArgumentParser(description="Anchored Peptide-MHC Ensemble Generator", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('peptide_input', type=str, nargs=1, help='Sequence of peptide to dock or pdbfile of crystal structure')
@@ -80,7 +80,7 @@ def main():
     parser.add_argument("-b", "--pass_type", type=str, default='receptor_only', choices=['receptor_only', 'pep_and_recept'], help="When using multiple rounds, pass best scoring conformation across different rounds (choose either 'receptor_only' or 'pep_and_recept')")
     parser.add_argument("-s", "--min_with_smina", action="store_true", help='Minimize with SMINA instead of the default Vinardo')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     peptide_input = args.peptide_input[0]
     receptor_class = args.receptor_class[0]
@@ -727,6 +727,6 @@ class RefineThread(Thread):
         rescore_with_smina(folder_name + "/all_models.pdb", "../../../receptor.pdb", folder_name, self.doReceptorMinimization, self.flexible_residues, self.useSMINA)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
 
