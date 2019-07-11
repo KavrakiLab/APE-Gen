@@ -47,7 +47,8 @@ ok_models = [x for x in a.outputs if x['failure'] is None]
 
 # Rank the models by DOPE score
 key = 'DOPE score'
-ok_models.sort(lambda a,b: cmp(a[key], b[key]))
+print(ok_models)
+ok_models.sort(key=lambda a: a[key])
 
 # Get top model
 m = ok_models[0]
