@@ -1,1 +1,3 @@
 *.pyc
+example
+.ipynb_checkpoints
