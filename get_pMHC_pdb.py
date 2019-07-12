@@ -55,7 +55,6 @@ def main(args):
     fixer.removeChains(chains_to_remove)
 
     chains = fixer.topology.chains()
-    print(chains)
     chain_lengths = []
     for c in chains:
         num_residues = len(list(c.residues()))
