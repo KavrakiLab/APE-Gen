@@ -4,19 +4,49 @@ import sys
 import os
 from modeller import *
 from modeller.automodel import *
+from Bio import pairwise2
+from Bio import SeqIO
+from Bio.PDB import *
+import re
 
 defaults_location = os.path.dirname(os.path.abspath(__file__))
 
-# python model_receptor.py <file containing alpha chain sequence> <template pdb>
+# python model_receptor.py < fasta file containing alpha chain> <template pdb>
 
 def main(args):
 
+    print("Removing signal and transmembrane portions of alpha chain seq")
+
+    raw_seq = str(list(SeqIO.parse(args[0], "fasta"))[0].seq)
+    
+    parser = PDBParser()
+    structure = parser.get_structure('asfd', args[1])
+    ppb = PPBuilder()
+    for pp in ppb.build_peptides(structure):
+        alpha_chain = str(pp.get_sequence())
+        break
+
+    beg_index = [m.start() for m in re.finditer(alpha_chain[:5], raw_seq)][0]
+    end_index = [m.start() for m in re.finditer(alpha_chain[-5:], raw_seq)][-1]
+
+    #alignments = pairwise2.align.localxx(raw_seq[beg_index:end_index+1], alpha_chain)
+    #print(alignments[0])
+
+    target_sequence = raw_seq[beg_index:end_index+1]
+
+    print("Length of original alpha chain seq:", len(raw_seq))
+    print("Length of processed alpha chain seq:", len(target_sequence))
+    print("Length of alpha chain in template:", len(alpha_chain))
+
+    """
     f = open(args[0], 'r')
     f_str = ""
     for line in f:
         f_str += line
     f.close()
     target_sequence = "".join(f_str.split())
+    """
+
     target_sequence += "/"
     # constant beta immunoglobin
     target_sequence += "MIQRTPKIQVYSRHPAENGKSNFLNCYVSGFHPSDIEVDLLKNGERIEKVEHSDLSFSKDWSFYLLYYTEFTPTEKDEYACRVNHVTLSQPKIVKWDRDM*" 
