@@ -134,11 +134,10 @@ optional arguments:
 
 ## Using Modeller scripts
 
-- Usage: `python model_receptor <file containing alpha chain seq> <template PDB>`
-- All scripts found in "APE-Gen/modeller_scripts/"
+- Usage: `python model_receptor.py <file containing alpha chain seq> <template PDB>`
 - Make sure all files are in the same directory
 - Will create 2 models and choose the best model according to MODELLER's DOPE score
-  - can change this parameter inside `model_receptor.py` when calling `model-single-opt.py`
+  - can change this parameter inside `model_receptor.py`
 - Model with the best DOPE score is found in `best_model.pdb`
 - Example: `python model_receptor.py A0201_alpha.txt 3I6L.pdb`
   - models HLA-A*02:01 using 3I6L as a template
