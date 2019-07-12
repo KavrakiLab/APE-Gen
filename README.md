@@ -134,12 +134,12 @@ optional arguments:
 
 ## Using Modeller scripts
 
-- Usage: `python model_receptor.py <file containing alpha chain seq> <template PDB>`
+- Usage: `python model_receptor.py <fasta file containing alpha chain seq> <template PDB>`
 - Make sure all files are in the same directory
 - Will create 2 models and choose the best model according to MODELLER's DOPE score
   - can change this parameter inside `model_receptor.py`
 - Model with the best DOPE score is found in `best_model.pdb`
-- Example: `python model_receptor.py A0201_alpha.txt 3I6L.pdb`
+- Example: `python model_receptor.py P01892.fasta 3I6L.pdb`
   - models HLA-A*02:01 using 3I6L as a template
     - 3I6L contains a model of HLA-A*24:02
 
