@@ -141,3 +141,9 @@ optional arguments:
   - models HLA-A*02:01 using 3I6L as a template
     - 3I6L contains a model of HLA-A*24:02
 
+## Using Docker file
+
+- Run: `docker build -t apegen .`
+- Minimal example: `python /APE-Gen/APE_Gen.py LLWTLVVLL HLA-A*02:01 -o`
+- Modeller still needs to be installed (along with obtaining license key) 
+

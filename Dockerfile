@@ -1,6 +1,18 @@
-FROM ubuntu:bionic
+FROM continuumio/miniconda3
+#RUN conda create -n env python=3
+#RUN echo "source activate env" >> ~/.bashrc
+#ENV PATH /opt/conda/envs/env/bin:$PATH
 
-ENV DEBIAN_FRONTEND=noninteractive
+# environment.yml has pdbfixer, numpy, mdtraj and openmm
+ADD environment.yml /tmp/environment.yml
+RUN conda env create -f /tmp/environment.yml
+RUN echo "source activate $(head -1 /tmp/environment.yml | cut -d' ' -f2)" > ~/.bashrc
+ENV PATH /opt/conda/envs/$(head -1 /tmp/environment.yml | cut -d' ' -f2)/bin:$PATH
+
+# These are okay outside environment.yml because they install to PATH
+# Perhaps better if inside yml?
+RUN conda install -c bioconda smina
+RUN conda install -c schrodinger pymol
 
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
@@ -30,81 +42,21 @@ RUN apt-get update && \
         python-pip \
         python-pmw \
         swig \
-        wget
-
-# Intel MKL; see https://github.com/eddelbuettel/mkl4deb
-RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB | apt-key add - && \
-    sh -c 'echo deb https://apt.repos.intel.com/mkl all main > /etc/apt/sources.list.d/intel-mkl.list' && \
-    apt-get update && \
-    apt-get -y install intel-mkl-64bit-2018.2-046 && \
-    update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so     libblas.so-x86_64-linux-gnu      /opt/intel/mkl/lib/intel64/libmkl_rt.so 50 && \
-    update-alternatives --install /usr/lib/x86_64-linux-gnu/libblas.so.3   libblas.so.3-x86_64-linux-gnu    /opt/intel/mkl/lib/intel64/libmkl_rt.so 50 && \
-    update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so   liblapack.so-x86_64-linux-gnu    /opt/intel/mkl/lib/intel64/libmkl_rt.so 50 && \
-    update-alternatives --install /usr/lib/x86_64-linux-gnu/liblapack.so.3 liblapack.so.3-x86_64-linux-gnu  /opt/intel/mkl/lib/intel64/libmkl_rt.so 50 && \
-    echo "/opt/intel/lib/intel64"     >  /etc/ld.so.conf.d/mkl.conf && \
-    echo "/opt/intel/mkl/lib/intel64" >> /etc/ld.so.conf.d/mkl.conf && \
-    ldconfig && \
-    echo "MKL_THREADING_LAYER=GNU" >> /etc/environment
-
-# Pip install some dependencies
-RUN pip install intel-scipy intel-numpy pandas
-
-# OpenMM (no CUDA or OpenCL support enabled for now)
-RUN git clone --depth 1 https://github.com/pandegroup/openmm.git && \
-    mkdir openmm/build && \
-    cd openmm/build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. && \
-    make -j`nproc` && \
-    make install && \
-    make PythonInstall && \
-    cd / && \
-    rm -rf openmm
-
-# PDBFixer
-RUN git clone --depth 1 https://github.com/pandegroup/pdbfixer.git && \
-    cd pdbfixer && \
-    #grep -v openmm setup.py > setup-fixed.py && \
-    python setup.py install && \
-    cd / && \
-    rm -rf pdbfixer
-
-# MDtraj
-RUN pip install mdtraj
-
-# OpenBabel; need unreleased version for SMINA!
-RUN git clone --depth 1 https://github.com/openbabel/openbabel.git && \
-    mkdir openbabel/build && \
-    cd openbabel/build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DPYTHON_BINDINGS=ON -DRUN_SWIG=ON .. && \
-    make -j`nproc` && \
-    make install && \
-    cd / && \
-    rm -rf openbabel
-
-# SMINA
-RUN git clone --depth 1 https://github.com/mwojcikowski/smina.git && \
-    cd smina/build/linux/release && \
-    make OPENBABEL_INCLUDE=/usr/include/openbabel-2.0 -j`nproc` && \
-    cp smina server tosmina /usr/local/bin && \
-    cd / && \
-    rm -rf smina
+        wget \
+        vim
 
 # RCD
+RUN conda install -c intel mkl
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib/" >> ~/.bashrc
 RUN wget -qO- http://chaconlab.org`wget -qO- http://chaconlab.org/modeling/rcd/rcd-download|grep txz|grep uk-button| cut -f4 -d\"` | tar Jxf - && \
-    cp RCD_v1.40_Linux_20190228/bin/rcd /usr/local/bin && \
-    rm -rf RCD_v1.40_Linux_20190228
-
-# Pymol
-RUN git clone --depth 1 https://github.com/schrodinger/pymol-open-source.git && \
-    cd pymol-open-source && \
-    python setup.py install --use-msgpackc=no --prefix=/root/pymol && \
-    cd / && \
-    rm -rf pymol-open-source
+    cp RCD_v1.40_Linux_20190228/bin/rcd /usr/local/bin
 
 # Autodock Vina
 RUN wget -qO- http://vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz | tar zxf - && \
     mv autodock_vina_1_1_2_linux_x86/bin/vina* /usr/local/bin/ && \
     rm -rf /autodock_vina_1_1_2_linux_x86
+
+RUN git clone https://github.com/KavrakiLab/APE-Gen.git
 
 # APE-Gen
 WORKDIR /home/apegen
