@@ -53,7 +53,7 @@ one_letter_code = {'ARG':'R', 'HIS':'H', 'LYS':'K', 'ASP':'D', 'GLU':'E', \
 three_letter_code  = {v: k for k, v in one_letter_code.items()}
 
 defaults_location = os.path.dirname(os.path.abspath(__file__)) #sys.path[0]
-pymol_location = "~/pymol/bin/pymol"
+pymol_location = "pymol"
 RCD_location = "rcd"
 smina_location = "smina"
 vina_location = "vina_split"
@@ -273,7 +273,7 @@ def main(args):
             call(["echo \"anchored_pMHC.pdb 3 " + str(last_loop_residue_1index) + " C " + peptide_sequence[2:last_loop_residue_1index] + "\" > loops.txt"], shell=True)
 
             #call([mpi_location + " " + str(num_cores) + " " + RCD_location + " -x dunbrack.bin --loco loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
-            call([RCD_location + " -x dunbrack.bin --loco loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
+            call([RCD_location + " -e 1 -x dunbrack.bin --energy_file loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
 
             print("Organizing RCD results")
 

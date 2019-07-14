@@ -112,21 +112,19 @@ optional arguments:
 1) install miniconda 
 	- https://conda.io/miniconda.html
 
-2) using conda, install smina, pdbfixer, mdtraj, and openMM
+2) using conda, install smina, pdbfixer, numpy, mdtraj, and openMM
 	- `conda install -c bioconda smina`
 	- `conda install -c omnia pdbfixer`
-	- `conda install -c omnia mdtraj`
-  - (optional) `conda install -c omnia openmm`
+	- `conda install -c conda-forge mdtraj`
+  - `conda install -c schrodinger pymol`
+  - (optional) `conda install -c omnia -c conda-forge openmm`
 
 3) install RCD
 	- http://chaconlab.org/modeling/rcd/rcd-download
 	- make sure RCD is added to path so that `rcd` is a command in the terminal
+  - intel mkl may be needed (`conda install -c intel mkl`) and added to library path
 
-4) install pymol
-	- make sure the pymol executable is `~/pymol/bin/pymol`
-	- otherwise, the location needs to be changed inside the APE-Gen script
-
-5) install vina
+4) install vina
 	- `wget vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz`
 	- `tar -xvzf autodock_vina_1_1_2_linux_x86.tgz`
 	- then add bin into path so that `vina_split` is a command in the terminal
