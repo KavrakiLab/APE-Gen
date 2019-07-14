@@ -143,7 +143,8 @@ optional arguments:
 
 ## Using Docker file
 
-- Run: `docker build -t apegen .`
+- Build: `docker build -t apegen .`
+- Run: `docker run -it apegen`
 - Minimal example: `python /APE-Gen/APE_Gen.py LLWTLVVLL HLA-A*02:01 -o`
 - Modeller still needs to be installed (along with obtaining license key) 
 
