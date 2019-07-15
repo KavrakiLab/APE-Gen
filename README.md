@@ -149,5 +149,6 @@ optional arguments:
 - Modeller still needs to be installed (along with obtaining license key) 
 - To use jupyter notebook:
   - `docker run -it -p 8888:8888 apegen`
+  -  `./setup_notebook.sh`
   - `jupyter notebook --no-browser --ip 0.0.0.0 --allow-root`
 
