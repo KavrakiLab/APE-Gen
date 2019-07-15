@@ -18,8 +18,8 @@ RUN conda install -c schrodinger pymol
 RUN echo "export PYTHONPATH=$PYTHONPATH:/home/apegen" >> ~/.bashrc
 
 # To get nglview to work inside jupyter notebook
-RUN jupyter-nbextension enable --py --sys-prefix widgetsnbextension
-RUN jupyter-nbextension enable nglview --py --sys-prefix
+echo "jupyter-nbextension enable --py --sys-prefix widgetsnbextension" >> ~/.bashrc
+echo "jupyter-nbextension enable nglview --py --sys-prefix" >> ~/.bashrc
 
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
