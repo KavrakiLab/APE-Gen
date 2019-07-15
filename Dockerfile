@@ -14,6 +14,13 @@ ENV PATH /opt/conda/envs/$(head -1 /tmp/environment.yml | cut -d' ' -f2)/bin:$PA
 RUN conda install -c bioconda smina
 RUN conda install -c schrodinger pymol
 
+# To call APE-Gen as module
+RUN echo "export PYTHONPATH=$PYTHONPATH:/home/apegen" >> ~/.bashrc
+
+# To get nglview to work inside jupyter notebook
+RUN jupyter-nbextension enable --py --sys-prefix widgetsnbextension
+RUN jupyter-nbextension enable nglview --py --sys-prefix
+
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
     apt-get -y install \

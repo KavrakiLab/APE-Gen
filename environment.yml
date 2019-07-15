@@ -8,3 +8,6 @@ dependencies:
   - numpy
   - mdtraj
   - openmm
+  - jupyter
+  - nglview
+  - matplotlib
