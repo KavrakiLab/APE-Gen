@@ -4,30 +4,6 @@
 #ENV PATH /opt/conda/envs/env/bin:$PATH
 
 FROM centos:6
-RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /home/jra8/miniconda.sh"]
-RUN chmod 0755 /home/jra8/miniconda.sh
-RUN ["/bin/bash", "-c", "/home/jra8/miniconda.sh -b -p /home/jra8/conda"]
-ENV PATH="/home/jra8/conda/bin:$PATH"
-RUN mkdir -p /home/jra8/singularity
-WORKDIR /home/jra8/singularity
-
-# environment.yml has pdbfixer, numpy, mdtraj and openmm
-ADD environment.yml /home/jra8/singularity/environment.yml
-RUN conda env create -f /home/jra8/singularity/environment.yml
-RUN echo "source activate $(head -1 /home/jra8/singularity/environment.yml | cut -d' ' -f2)" > ~/.bashrc
-ENV PATH /opt/conda/envs/$(head -1 /home/jra8/singularity/environment.yml | cut -d' ' -f2)/bin:$PATH
-
-# These are okay outside environment.yml because they install to PATH
-# Perhaps better if inside yml?
-RUN conda install -c bioconda smina
-RUN conda install -c schrodinger pymol
-
-# To call APE-Gen as module
-RUN echo "export PYTHONPATH=$PYTHONPATH:/home/jra8/singularity" >> ~/.bashrc
-
-# To get nglview to work inside jupyter notebook
-#RUN echo "jupyter-nbextension enable --py --sys-prefix widgetsnbextension" >> ~/.bashrc
-#RUN echo "jupyter-nbextension enable nglview --py --sys-prefix" >> ~/.bashrc
 
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
@@ -59,6 +35,32 @@ RUN apt-get update && \
         swig \
         wget \
         vim
+
+
+RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /home/jra8/miniconda.sh"]
+RUN chmod 0755 /home/jra8/miniconda.sh
+RUN ["/bin/bash", "-c", "/home/jra8/miniconda.sh -b -p /home/jra8/conda"]
+ENV PATH="/home/jra8/conda/bin:$PATH"
+RUN mkdir -p /home/jra8/singularity
+WORKDIR /home/jra8/singularity
+
+# environment.yml has pdbfixer, numpy, mdtraj and openmm
+ADD environment.yml /home/jra8/singularity/environment.yml
+RUN conda env create -f /home/jra8/singularity/environment.yml
+RUN echo "source activate $(head -1 /home/jra8/singularity/environment.yml | cut -d' ' -f2)" > ~/.bashrc
+ENV PATH /opt/conda/envs/$(head -1 /home/jra8/singularity/environment.yml | cut -d' ' -f2)/bin:$PATH
+
+# These are okay outside environment.yml because they install to PATH
+# Perhaps better if inside yml?
+RUN conda install -c bioconda smina
+RUN conda install -c schrodinger pymol
+
+# To call APE-Gen as module
+RUN echo "export PYTHONPATH=$PYTHONPATH:/home/jra8/singularity" >> ~/.bashrc
+
+# To get nglview to work inside jupyter notebook
+#RUN echo "jupyter-nbextension enable --py --sys-prefix widgetsnbextension" >> ~/.bashrc
+#RUN echo "jupyter-nbextension enable nglview --py --sys-prefix" >> ~/.bashrc
 
 # RCD
 RUN conda install -c intel mkl
