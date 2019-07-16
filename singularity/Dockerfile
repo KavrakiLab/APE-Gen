@@ -1,8 +1,14 @@
-FROM continuumio/miniconda3
+#FROM continuumio/miniconda3
 #RUN conda create -n env python=3
 #RUN echo "source activate env" >> ~/.bashrc
 #ENV PATH /opt/conda/envs/env/bin:$PATH
 
+FROM centos:6
+RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /home/jra8/miniconda.sh"]
+RUN chmod 0755 /home/jra8/miniconda.sh
+RUN ["/bin/bash", "-c", "/home/jra8/miniconda.sh -b -p /home/jra8/conda"]
+ENV PATH="/home/jra8/conda/bin:$PATH"
+RUN mkdir -p /home/jra8/singularity
 WORKDIR /home/jra8/singularity
 
 # environment.yml has pdbfixer, numpy, mdtraj and openmm
