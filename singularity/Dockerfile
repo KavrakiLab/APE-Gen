@@ -3,7 +3,7 @@
 #RUN echo "source activate env" >> ~/.bashrc
 #ENV PATH /opt/conda/envs/env/bin:$PATH
 
-FROM centos:6
+FROM ubuntu:16.04
 
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
