@@ -38,9 +38,9 @@ RUN apt-get update && \
         vim
 
 
-RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /home/jra8/miniconda.sh"]
-RUN chmod 0755 /home/jra8/miniconda.sh
-RUN ["/bin/bash", "-c", "/home/jra8/miniconda.sh -b -p /home/jra8/conda"]
+RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh"]
+RUN chmod 0755 Miniconda-latest-Linux-x86_64.sh
+RUN ["/bin/bash", "-c", "Miniconda-latest-Linux-x86_64.sh -b -p /home/jra8/conda"]
 ENV PATH="/home/jra8/conda/bin:$PATH"
 RUN mkdir -p /home/jra8/singularity
 WORKDIR /home/jra8/singularity
