@@ -4,6 +4,7 @@
 #ENV PATH /opt/conda/envs/env/bin:$PATH
 
 FROM ubuntu:bionic
+ENV DEBIAN_FRONTEND=noninteractive
 
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
