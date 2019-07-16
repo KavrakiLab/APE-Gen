@@ -1,0 +1,10 @@
+name: apegen
+channels:
+  - omnia
+  - conda-forge
+dependencies:
+  - python=3
+  - pdbfixer
+  - numpy
+  - mdtraj
+  - openmm
