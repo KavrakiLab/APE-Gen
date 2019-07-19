@@ -265,7 +265,7 @@ def main(args):
             
             
             call(["cp ../../receptor.pdb anchored_pMHC.pdb"], shell=True)
-            call(["less ../../anchors.pdb >> anchored_pMHC.pdb"], shell=True)
+            call(["cat ../../anchors.pdb >> anchored_pMHC.pdb"], shell=True)
 
             call(["cp " + defaults_location + "/loco.score " + defaults_location + "/dunbrack.bin ."], shell=True)
 
@@ -295,8 +295,8 @@ def main(args):
             call(["touch models_minimize.pdb"], shell=True)
             if doReceptorMinimization: call(["touch receptor_models_minimize.pdb"], shell=True)
             for folder_name in folder_names:
-                call(["less " + folder_name + "/models_minimize.pdb >> models_minimize.pdb"], shell=True)
-                if doReceptorMinimization: call(["less " + folder_name + "/receptor_new.pdb >> receptor_models_minimize.pdb"], shell=True)
+                call(["cat " + folder_name + "/models_minimize.pdb >> models_minimize.pdb"], shell=True)
+                if doReceptorMinimization: call(["cat " + folder_name + "/receptor_new.pdb >> receptor_models_minimize.pdb"], shell=True)
 
 
             # find the minimum energy binding mode and use as reference
@@ -699,7 +699,7 @@ class RefineThread(Thread):
             # fill in anchors
             call(["touch " + model_name_i], shell=True)
             call(["grep \"C   1\" ../../../peptide.pdb > " + model_name_i], shell=True)
-            call(["less " + partial_name_i + " >> " + model_name_i], shell=True)
+            call(["cat " + partial_name_i + " >> " + model_name_i], shell=True)
             call(["grep " + self.last_anchor + " ../../../peptide.pdb >> " + model_name_i], shell=True)
 
             # fill in sidechains
