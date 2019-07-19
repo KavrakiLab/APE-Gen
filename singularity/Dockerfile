@@ -38,10 +38,10 @@ RUN apt-get update && \
         vim
 
 
-RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh"]
-RUN chmod 0755 Miniconda-latest-Linux-x86_64.sh
+RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"]
+RUN chmod 0755 Miniconda3-latest-Linux-x86_64.sh
 #RUN ["/bin/bash", "-c", "Miniconda-latest-Linux-x86_64.sh -b -p /home/jra8/conda"]
-RUN ./Miniconda-latest-Linux-x86_64.sh -b -p /home/jra8/conda
+RUN ./Miniconda3-latest-Linux-x86_64.sh -b -p /home/jra8/conda
 ENV PATH="/home/jra8/conda/bin:$PATH"
 RUN mkdir -p /home/jra8/singularity
 WORKDIR /home/jra8/singularity
@@ -49,8 +49,8 @@ WORKDIR /home/jra8/singularity
 # environment.yml has pdbfixer, numpy, mdtraj and openmm
 ADD environment.yml /home/jra8/singularity/environment.yml
 RUN conda env create -f /home/jra8/singularity/environment.yml
-RUN echo "source activate $(head -1 /home/jra8/singularity/environment.yml | cut -d' ' -f2)" > ~/.bashrc
-ENV PATH /opt/conda/envs/$(head -1 /home/jra8/singularity/environment.yml | cut -d' ' -f2)/bin:$PATH
+RUN echo "source activate apegen" > ~/.bashrc
+ENV PATH /opt/conda/envs/apegen/bin:$PATH
 
 # These are okay outside environment.yml because they install to PATH
 # Perhaps better if inside yml?
@@ -58,7 +58,7 @@ RUN conda install -c bioconda smina
 RUN conda install -c schrodinger pymol
 
 # To call APE-Gen as module
-RUN echo "export PYTHONPATH=$PYTHONPATH:/home/jra8/singularity" >> ~/.bashrc
+#RUN echo "export PYTHONPATH=$PYTHONPATH:/home/jra8/singularity" >> ~/.bashrc
 
 # To get nglview to work inside jupyter notebook
 #RUN echo "jupyter-nbextension enable --py --sys-prefix widgetsnbextension" >> ~/.bashrc
@@ -66,14 +66,16 @@ RUN echo "export PYTHONPATH=$PYTHONPATH:/home/jra8/singularity" >> ~/.bashrc
 
 # RCD
 RUN conda install -c intel mkl
-RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib/" >> ~/.bashrc
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/jra8/conda/lib/" >> ~/.bashrc
 RUN wget -qO- http://chaconlab.org`wget -qO- http://chaconlab.org/modeling/rcd/rcd-download|grep txz|grep uk-button| cut -f4 -d\"` | tar Jxf - && \
     cp RCD_v1.40_Linux_20190228/bin/rcd /usr/local/bin
-RUN echo "export PATH=/home/jra8/singularity/RCD_v1.40_Linux_20190228/bin:$PATH"
+RUN echo "export PATH=/home/jra8/singularity/RCD_v1.40_Linux_20190228/bin:$PATH" >> ~/.bashrc
 
 # Autodock Vina
 RUN wget -qO- http://vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz | tar zxf - 
-RUN echo "export PATH=/home/jra8/singularity/autodock_vina_1_1_2_linux_x86/bin:$PATH"
+RUN echo "export PATH=/home/jra8/singularity/autodock_vina_1_1_2_linux_x86/bin:$PATH" >> ~/.bashrc
+
+RUN conda install -c omnia -c conda-forge openmm pdbfixer mdtraj
 
 RUN git clone https://github.com/KavrakiLab/APE-Gen.git
 
