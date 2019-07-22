@@ -6,6 +6,8 @@
 FROM ubuntu:bionic
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN mkdir /scratch /work /home1 /gpfs /corral-repl /corral-tacc /data
+
 # use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
     apt-get -y install \
@@ -41,16 +43,16 @@ RUN apt-get update && \
 RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"]
 RUN chmod 0755 Miniconda3-latest-Linux-x86_64.sh
 #RUN ["/bin/bash", "-c", "Miniconda-latest-Linux-x86_64.sh -b -p /home/jra8/conda"]
-RUN ./Miniconda3-latest-Linux-x86_64.sh -b -p /home/jra8/conda
-ENV PATH="/home/jra8/conda/bin:$PATH"
-RUN mkdir -p /home/jra8/singularity
-WORKDIR /home/jra8/singularity
+RUN ./Miniconda3-latest-Linux-x86_64.sh -b -p /conda
+ENV PATH="/conda/bin:$PATH"
+#RUN mkdir -p /home/jra8/singularity
+#WORKDIR /home/jra8/singularity
 
 # environment.yml has pdbfixer, numpy, mdtraj and openmm
-ADD environment.yml /home/jra8/singularity/environment.yml
-RUN conda env create -f /home/jra8/singularity/environment.yml
-RUN echo "source activate apegen" > ~/.bashrc
-ENV PATH /opt/conda/envs/apegen/bin:$PATH
+ADD environment.yml /environment.yml
+RUN conda env create -f /environment.yml
+RUN echo "source activate apegen" >> ~/.bashrc
+ENV PATH /conda/envs/apegen/bin:$PATH
 
 # These are okay outside environment.yml because they install to PATH
 # Perhaps better if inside yml?
@@ -66,20 +68,19 @@ RUN conda install -c schrodinger pymol
 
 # RCD
 RUN conda install -c intel mkl
-RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/jra8/conda/lib/" >> ~/.bashrc
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/conda/lib/" >> ~/.bashrc
 RUN wget -qO- http://chaconlab.org`wget -qO- http://chaconlab.org/modeling/rcd/rcd-download|grep txz|grep uk-button| cut -f4 -d\"` | tar Jxf - && \
     cp RCD_v1.40_Linux_20190228/bin/rcd /usr/local/bin
-RUN echo "export PATH=/home/jra8/singularity/RCD_v1.40_Linux_20190228/bin:$PATH" >> ~/.bashrc
+RUN echo "export PATH=/RCD_v1.40_Linux_20190228/bin:$PATH" >> ~/.bashrc
 
 # Autodock Vina
 RUN wget -qO- http://vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz | tar zxf - 
-RUN echo "export PATH=/home/jra8/singularity/autodock_vina_1_1_2_linux_x86/bin:$PATH" >> ~/.bashrc
+RUN echo "export PATH=/autodock_vina_1_1_2_linux_x86/bin:$PATH" >> ~/.bashrc
 
-RUN conda install -c omnia -c conda-forge openmm pdbfixer mdtraj
 
 RUN git clone https://github.com/KavrakiLab/APE-Gen.git
 
 # APE-Gen
 #WORKDIR /home/apegen
-COPY . /home/jra8/singularity/
+#COPY . /home/jra8/singularity/
 ENTRYPOINT ["bash"]
