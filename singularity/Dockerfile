@@ -68,14 +68,16 @@ RUN conda install -c schrodinger pymol
 
 # RCD
 RUN conda install -c intel mkl
-RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/conda/lib/" >> ~/.bashrc
+#RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/conda/lib/" >> ~/.bashrc
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/conda/lib/
 RUN wget -qO- http://chaconlab.org`wget -qO- http://chaconlab.org/modeling/rcd/rcd-download|grep txz|grep uk-button| cut -f4 -d\"` | tar Jxf - && \
     cp RCD_v1.40_Linux_20190228/bin/rcd /usr/local/bin
-RUN echo "export PATH=/RCD_v1.40_Linux_20190228/bin:$PATH" >> ~/.bashrc
+#RUN echo "export PATH=/RCD_v1.40_Linux_20190228/bin:$PATH" >> ~/.bashrc
 
 # Autodock Vina
-RUN wget -qO- http://vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz | tar zxf - 
-RUN echo "export PATH=/autodock_vina_1_1_2_linux_x86/bin:$PATH" >> ~/.bashrc
+RUN wget -qO- http://vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz | tar zxf - && \
+    cp /autodock_vina_1_1_2_linux_x86/bin/vina_split /usr/local/bin
+#RUN echo "export PATH=/autodock_vina_1_1_2_linux_x86/bin:$PATH" >> ~/.bashrc
 
 
 RUN git clone https://github.com/KavrakiLab/APE-Gen.git
