@@ -295,12 +295,12 @@ def main(args):
             #print(progress)
             progress = 0
             while progress < num_loops:
-            	progress = 0
-            	for s in folder_names:
-            		if os.path.exists(s + "/models_minimize.pdb"):
-            			progress += int(check_output(["grep \"MODEL\" " + s + "/models_minimize.pdb | wc -l"], shell=True))
-            	#progress = int(check_output(["for i in " + " ".join(folder_names) + "; do grep \"MODEL\" $i/models_minimize.pdb | wc -l; done | paste -sd+ | bc"], shell=True))
-            	printProgressBar(progress, 100, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                progress = 0
+                for s in folder_names:
+                    if os.path.exists(s + "/models_minimize.pdb"):
+                        progress += int(check_output(["grep \"MODEL\" " + s + "/models_minimize.pdb | wc -l"], shell=True))
+                #progress = int(check_output(["for i in " + " ".join(folder_names) + "; do grep \"MODEL\" $i/models_minimize.pdb | wc -l; done | paste -sd+ | bc"], shell=True))
+                printProgressBar(progress, 100, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
             #for t in threads: t.join()
 
@@ -477,8 +477,10 @@ def main(args):
                     call(["mkdir full_system_confs"], shell=True)
                     
                     for j, conf in enumerate(all_confs):
+                        printProgressBar(j+1, len(all_confs), prefix = 'Progress:', suffix = 'Complete', length = 50)
+                        
                         if j not in filtered_indices: continue
-                        print(j)
+                        #print(j)
                         conf.save_pdb("temp.pdb")
                         call(["sed -i \"s/ A  / C  /g\" temp.pdb"], shell=True)
 
@@ -521,6 +523,7 @@ def main(args):
                         #if model_indices[j] == min_model_index: call(["cp target.pdb min_energy_system.pdb"], shell=True)
 
                         call(["rm temp.pdb receptor_part.pdb receptor_temp.pdb system.pdb target.pdb"], shell=True)
+
                     
 
         # this comes last because calling md.rmsd centers the coordinates (messing up the alignment)
@@ -583,9 +586,9 @@ def main(args):
                         print(i, filenames[i-1], j, energy)
 
                         if energy < 0: 
-                        	min_filenames.append("min-" + complex_model)
-                        	energies.append(energy)
-                        	break
+                            min_filenames.append("min-" + complex_model)
+                            energies.append(energy)
+                            break
                         else:
                             if j == (numTries-1):
                                 call(["rm " + complex_model + " min-" + complex_model], shell=True)
