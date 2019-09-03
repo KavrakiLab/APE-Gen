@@ -290,7 +290,19 @@ def main(args):
                 t = RefineThread(loop_indices, len(peptide_sequence), num_loops, doReceptorMinimization, flexible_residues, min_with_smina, debug)
                 threads.append(t)
                 t.start()
-            for t in threads: t.join()
+            
+            #progress = int(check_output(["for i in " + " ".join(folder_names) + "; do grep \"MODEL\" $i/models_minimize.pdb | wc -l; done | paste -sd+ | bc"], shell=True))
+            #print(progress)
+            progress = 0
+            while progress < num_loops:
+            	progress = 0
+            	for s in folder_names:
+            		if os.path.exists(s + "/models_minimize.pdb"):
+            			progress += int(check_output(["grep \"MODEL\" " + s + "/models_minimize.pdb | wc -l"], shell=True))
+            	#progress = int(check_output(["for i in " + " ".join(folder_names) + "; do grep \"MODEL\" $i/models_minimize.pdb | wc -l; done | paste -sd+ | bc"], shell=True))
+            	printProgressBar(progress, 100, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+            #for t in threads: t.join()
 
             call(["touch models_minimize.pdb"], shell=True)
             if doReceptorMinimization: call(["touch receptor_models_minimize.pdb"], shell=True)
@@ -595,13 +607,13 @@ def main(args):
 def rescore_with_smina(models, receptor, output_loc, doReceptorMinimization, flexible_residues, useSMINA):
 
     if not useSMINA and doReceptorMinimization:
-        call([smina_location + " --scoring vinardo --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)
+        call([smina_location + " -q --scoring vinardo --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb >> progress.txt"], shell=True)
     elif not useSMINA and not doReceptorMinimization:
-        call([smina_location + " --scoring vinardo --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)  
+        call([smina_location + " -q --scoring vinardo --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)  
     elif useSMINA and doReceptorMinimization:
-        call([smina_location + " --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)
+        call([smina_location + " -q --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)
     elif useSMINA and not doReceptorMinimization:
-        call([smina_location + " --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)       
+        call([smina_location + " -q --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)       
 
 def process_smina(ref, data_name, confs_name, native, min_model_index, debug):
 
@@ -728,6 +740,27 @@ class RefineThread(Thread):
             call(["echo \"ENDMDL\" >> " + folder_name + "/all_models.pdb"], shell=True)
 
         rescore_with_smina(folder_name + "/all_models.pdb", "../../../receptor.pdb", folder_name, self.doReceptorMinimization, self.flexible_residues, self.useSMINA)
+
+# Print iterations progress
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = '\r')
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
