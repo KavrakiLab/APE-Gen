@@ -194,10 +194,10 @@ def main(args):
 
         print("Aligning peptide anchors to MHC pockets")
 
-        call([pymol_location + " -qc " + defaults_location + "/align.py " + peptide_template + " " + receptor_template], shell=True)
+        call([pymol_location + " -qc " + defaults_location + "/align.py " + peptide_template + " " + receptor_template + " > align.log 2>&1"], shell=True)
 
         if native_loc != None:
-            call([pymol_location + " -qc " + defaults_location + "/align.py " + native_pdb + " " + receptor_template], shell=True)
+            call([pymol_location + " -qc " + defaults_location + "/align.py " + native_pdb + " " + receptor_template + " > align.log 2>&1"], shell=True)
             call(["grep \"[A-Z] C  \" aln-" + native_pdb + " > native.pdb"], shell=True)
             native_loc = "native.pdb"
 
@@ -273,14 +273,14 @@ def main(args):
             call(["echo \"anchored_pMHC.pdb 3 " + str(last_loop_residue_1index) + " C " + peptide_sequence[2:last_loop_residue_1index] + "\" > loops.txt"], shell=True)
 
             #call([mpi_location + " " + str(num_cores) + " " + RCD_location + " -x dunbrack.bin --loco loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
-            call([RCD_location + " -e 1 -x dunbrack.bin --energy_file loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
+            call([RCD_location + " -e 1 -x dunbrack.bin --energy_file loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt  > rcd.log 2>&1"], shell=True)
 
             print("Organizing RCD results")
 
             call(["mkdir models; cp RCD/anchored_pMHC_closed.pdb models/"], shell=True)        
             os.chdir("models")
             
-            call([vina_location + " --input anchored_pMHC_closed.pdb --ligand partial"], shell=True)
+            call([vina_location + " --input anchored_pMHC_closed.pdb --ligand partial > vina.log 2>&1"], shell=True)
 
             array_splits = np.array_split(list(range(1, num_loops+1)), num_cores)
             folder_names = [str(s[0]) for s in array_splits]
@@ -300,6 +300,7 @@ def main(args):
                     if os.path.exists(s + "/models_minimize.pdb"):
                         progress += int(check_output(["grep \"MODEL\" " + s + "/models_minimize.pdb | wc -l"], shell=True))
                 #progress = int(check_output(["for i in " + " ".join(folder_names) + "; do grep \"MODEL\" $i/models_minimize.pdb | wc -l; done | paste -sd+ | bc"], shell=True))
+                if progress == 0: continue
                 printProgressBar(progress, 100, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
             #for t in threads: t.join()
@@ -472,7 +473,7 @@ def main(args):
                     """
                     
                     os.chdir("RCD/input/models")
-                    call([vina_location + " --input receptor_models_minimize.pdb --ligand receptor"], shell=True)
+                    call([vina_location + " --input receptor_models_minimize.pdb --ligand receptor  > vina.log 2>&1"], shell=True)
                     os.chdir("../../..")
                     call(["mkdir full_system_confs"], shell=True)
                     
@@ -610,13 +611,13 @@ def main(args):
 def rescore_with_smina(models, receptor, output_loc, doReceptorMinimization, flexible_residues, useSMINA):
 
     if not useSMINA and doReceptorMinimization:
-        call([smina_location + " -q --scoring vinardo --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb >> progress.txt"], shell=True)
+        call([smina_location + " -q --scoring vinardo --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb  > smina.log 2>&1"], shell=True)
     elif not useSMINA and not doReceptorMinimization:
-        call([smina_location + " -q --scoring vinardo --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)  
+        call([smina_location + " -q --scoring vinardo --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb > smina.log 2>&1"], shell=True)  
     elif useSMINA and doReceptorMinimization:
-        call([smina_location + " -q --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)
+        call([smina_location + " -q --out_flex " + output_loc + "/receptor_new.pdb --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --flexres " + flexible_residues + " --energy_range 100 --out " + output_loc + "/models_minimize.pdb  > smina.log 2>&1"], shell=True)
     elif useSMINA and not doReceptorMinimization:
-        call([smina_location + " -q --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb"], shell=True)       
+        call([smina_location + " -q --ligand " + models + " --receptor " + receptor + " --autobox_ligand " + models + " --autobox_add 4 --local_only --minimize --energy_range 100 --out " + output_loc + "/models_minimize.pdb > smina.log 2>&1"], shell=True)       
 
 def process_smina(ref, data_name, confs_name, native, min_model_index, debug):
 
