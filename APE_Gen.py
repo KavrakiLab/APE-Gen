@@ -572,6 +572,7 @@ def main(args):
                 min_filenames = []
                 energies = []
                 for i in range(1, len(filenames)+1):
+
                     complex_model = "complex-" + str(i).zfill( len(str(len(filenames))) ) + ".pdb"
 
                     for j in range(numTries):
@@ -584,7 +585,7 @@ def main(args):
                             if line_arr[0] == "total:": energy = float(line_arr[1]) # should go through here twice, second appearance is kept
                         f.close()
 
-                        print(i, filenames[i-1], j, energy)
+                        #print(i, filenames[i-1], j, energy)
 
                         if energy < 0: 
                             min_filenames.append("min-" + complex_model)
@@ -593,6 +594,8 @@ def main(args):
                         else:
                             if j == (numTries-1):
                                 call(["rm " + complex_model + " min-" + complex_model], shell=True)
+
+                    printProgressBar(i, len(filenames), prefix = 'Progress:', suffix = 'Complete', length = 50)
 
                 call(["mkdir openmm-minimized"], shell=True)
                 call(["rm complex-*.pdb"], shell=True)
