@@ -58,7 +58,7 @@ def main():
 
     integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
     #integrator = VerletIntegrator(0.002*picoseconds)
-    platform = Platform.getPlatformByName('CPU')
+    platform = Platform.getPlatformByName('OpenCL')
     simulation = Simulation(modeller.topology, system, integrator, platform)
 
 

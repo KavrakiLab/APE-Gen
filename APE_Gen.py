@@ -45,6 +45,11 @@ import mdtraj as md
 import argparse
 import glob
 
+from simtk.openmm.app import *
+from simtk.openmm import *
+from simtk.unit import *
+from sys import stdout
+
 one_letter_code = {'ARG':'R', 'HIS':'H', 'LYS':'K', 'ASP':'D', 'GLU':'E', \
                   'SER':'S', 'THR':'T', 'ASN':'N', 'GLN':'Q', 'CYS':'C', \
                   'GLY':'G', 'PRO':'P', 'ALA':'A', 'VAL':'V', 'ILE':'I', \
@@ -79,6 +84,7 @@ def main(args):
     parser.add_argument("-g", "--num_rounds", type=int, default=1, help='Number of rounds to perform.')
     parser.add_argument("-b", "--pass_type", type=str, default='receptor_only', choices=['receptor_only', 'pep_and_recept'], help="When using multiple rounds, pass best scoring conformation across different rounds (choose either 'receptor_only' or 'pep_and_recept')")
     parser.add_argument("-s", "--min_with_smina", action="store_true", help='Minimize with SMINA instead of the default Vinardo')
+    parser.add_argument("--use_gpu", action="store_true", help='Use GPU for OpenMM Minimization step')
 
     args = parser.parse_args(args)
 
@@ -96,6 +102,9 @@ def main(args):
     num_rounds = args.num_rounds
     pass_type = args.pass_type
     min_with_smina = args.min_with_smina
+    use_gpu = args.use_gpu
+    if use_gpu: device = "OpenCL"
+    else: device = "CPU"
 
     print("Preparing peptide and MHC")
 
@@ -577,15 +586,21 @@ def main(args):
 
                     for j in range(numTries):
                         call(["pdbfixer " + filenames[i-1] + " --output=" + complex_model], shell=True)
-                        call(["python " + defaults_location + "/minimize.py " + complex_model + " min-" + complex_model + " > temp.txt"], shell=True)
+                        
+                        #call(["python " + defaults_location + "/minimize.py " + complex_model + " min-" + complex_model + " > temp.txt"], shell=True)
 
-                        f = open("temp.txt", 'r')
-                        for line in f:
-                            line_arr = line.split()
-                            if line_arr[0] == "total:": energy = float(line_arr[1]) # should go through here twice, second appearance is kept
-                        f.close()
+                        #f = open("temp.txt", 'r')
+                        #for line in f:
+                        #    line_arr = line.split()
+                        #    if line_arr[0] == "total:": energy = float(line_arr[1]) # should go through here twice, second appearance is kept
+                        #f.close()
+
+                        energy = minimizeConf(complex_model, "min-" + complex_model, device)
+                        #print(energy)
 
                         #print(i, filenames[i-1], j, energy)
+
+                        printProgressBar((i-1)*10 + j, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
                         if energy < 0: 
                             min_filenames.append("min-" + complex_model)
@@ -595,7 +610,8 @@ def main(args):
                             if j == (numTries-1):
                                 call(["rm " + complex_model + " min-" + complex_model], shell=True)
 
-                    printProgressBar(i, len(filenames), prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+                printProgressBar(len(filenames)*10, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
                 call(["mkdir openmm-minimized"], shell=True)
                 call(["rm complex-*.pdb"], shell=True)
@@ -768,6 +784,80 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     # Print New Line on Complete
     if iteration == total: 
         print()
+
+def minimizeConf(filename, new_filename, device='CPU'):
+    
+    #print("Opening:", filename)
+
+    pdb = PDBFile(filename)
+    top = pdb.getTopology()
+    positions = np.array(pdb.positions) #pdb.getPositions(asNumpy=True)
+    numAtoms = len(positions)
+
+    #print("Number of atoms:", numAtoms)
+    #print("Number of residues:", top.getNumResidues())
+
+    positions = np.reshape(positions, (3*numAtoms,1))
+
+    # run file through pdb fixer first
+
+    #forcefield = ForceField('amber99sb.xml', 'tip3p.xml')
+    forcefield = app.ForceField('amber99sbildn.xml', 'amber99_obc.xml')
+    #forcefield = app.ForceField('amber03.xml', 'amber03_obc.xml')
+    #forcefield = app.ForceField('amber10.xml', 'amber10_obc.xml')
+    modeller = Modeller(pdb.topology, pdb.positions)
+    system = forcefield.createSystem(modeller.topology, nonbondedMethod=CutoffNonPeriodic, constraints=None)
+
+    force_constant = 5000
+    force = CustomExternalForce("k*periodicdistance(x, y, z, x0, y0, z0)^2")
+    force.addGlobalParameter("k", force_constant)
+    force.addPerParticleParameter("x0")
+    force.addPerParticleParameter("y0")
+    force.addPerParticleParameter("z0")
+    protein_particles = md.load(filename).top.select("backbone")
+
+    particle_indices = []
+    for protein_particle in protein_particles:
+        particle_indices.append(force.addParticle(int(protein_particle), modeller.positions[protein_particle]) )
+    system.addForce(force)
+
+
+    forces = system.getForces()
+    i = 0
+    for f in forces:
+        f.setForceGroup(i)
+        i = i + 1
+
+
+    integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
+    #integrator = VerletIntegrator(0.002*picoseconds)
+    platform = Platform.getPlatformByName(device)
+    simulation = Simulation(modeller.topology, system, integrator, platform)
+
+
+    simulation.context.setPositions(modeller.positions)
+
+    #printForces(simulation)
+
+    #print("Minimizing energy ... ")
+    simulation.minimizeEnergy()
+
+    #printForces(simulation)
+
+    simulation.reporters.append(app.StateDataReporter(stdout, 100, step=True, 
+    potentialEnergy=True, temperature=True, progress=False, remainingTime=True, 
+    speed=True, totalSteps=250000, separator='\t'))
+
+    #print "Equilibrating ..."
+    #simulation.step(250000)
+
+    #if len(sys.argv) == 2: r = PDBReporter('output.pdb', 1)
+    #else: 
+    r = PDBReporter(new_filename, 1)
+    r.report(simulation, simulation.context.getState(getPositions=True, getEnergy=True))
+
+
+    return simulation.context.getState(getEnergy=True).getPotentialEnergy() / kilojoule_per_mole
 
 if __name__ == "__main__":
     main(sys.argv[1:])
