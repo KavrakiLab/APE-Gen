@@ -194,10 +194,10 @@ def main(args):
 
         print("Aligning peptide anchors to MHC pockets")
 
-        call([pymol_location + " -qc " + defaults_location + "/align.py " + peptide_template + " " + receptor_template + " > align.log 2>&1"], shell=True)
+        call([pymol_location + " -qc " + defaults_location + "/align.py " + peptide_template + " " + receptor_template + " >> align.log 2>&1"], shell=True)
 
         if native_loc != None:
-            call([pymol_location + " -qc " + defaults_location + "/align.py " + native_pdb + " " + receptor_template + " > align.log 2>&1"], shell=True)
+            call([pymol_location + " -qc " + defaults_location + "/align.py " + native_pdb + " " + receptor_template + " >> align.log 2>&1"], shell=True)
             call(["grep \"[A-Z] C  \" aln-" + native_pdb + " > native.pdb"], shell=True)
             native_loc = "native.pdb"
 
@@ -273,14 +273,14 @@ def main(args):
             call(["echo \"anchored_pMHC.pdb 3 " + str(last_loop_residue_1index) + " C " + peptide_sequence[2:last_loop_residue_1index] + "\" > loops.txt"], shell=True)
 
             #call([mpi_location + " " + str(num_cores) + " " + RCD_location + " -x dunbrack.bin --loco loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt"], shell=True)
-            call([RCD_location + " -e 1 -x dunbrack.bin --energy_file loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt  > rcd.log 2>&1"], shell=True)
+            call([RCD_location + " -e 1 -x dunbrack.bin --energy_file loco.score -o RCD -d " + str(RCD_dist_tol) + " -n " + str(num_loops) + " loops.txt  >> rcd.log 2>&1"], shell=True)
 
             print("Organizing RCD results")
 
             call(["mkdir models; cp RCD/anchored_pMHC_closed.pdb models/"], shell=True)        
             os.chdir("models")
             
-            call([vina_location + " --input anchored_pMHC_closed.pdb --ligand partial > vina.log 2>&1"], shell=True)
+            call([vina_location + " --input anchored_pMHC_closed.pdb --ligand partial >> vina.log 2>&1"], shell=True)
 
             array_splits = np.array_split(list(range(1, num_loops+1)), num_cores)
             folder_names = [str(s[0]) for s in array_splits]
@@ -473,7 +473,7 @@ def main(args):
                     """
                     
                     os.chdir("RCD/input/models")
-                    call([vina_location + " --input receptor_models_minimize.pdb --ligand receptor  > vina.log 2>&1"], shell=True)
+                    call([vina_location + " --input receptor_models_minimize.pdb --ligand receptor  >> vina.log 2>&1"], shell=True)
                     os.chdir("../../..")
                     call(["mkdir full_system_confs"], shell=True)
                     
