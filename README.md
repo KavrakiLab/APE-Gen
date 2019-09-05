@@ -116,9 +116,9 @@ optional arguments:
 	- `conda install -c bioconda smina`
 	- `conda install -c omnia pdbfixer`
 	- `conda install -c conda-forge mdtraj`
-        - `conda install -c schrodinger pymol`
-        - `conda install -c bioconda autodock-vina`
-        - (optional) `conda install -c omnia -c conda-forge openmm`
+	- `conda install -c schrodinger pymol`
+	- `conda install -c bioconda autodock-vina`
+	- `conda install -c omnia -c conda-forge openmm`
 
 3) install RCD (v1.40)
 	- http://chaconlab.org/modeling/rcd/rcd-download

@@ -1,27 +1,9 @@
-FROM continuumio/miniconda3
-#RUN conda create -n env python=3
-#RUN echo "source activate env" >> ~/.bashrc
-#ENV PATH /opt/conda/envs/env/bin:$PATH
+FROM ubuntu:bionic
+ENV DEBIAN_FRONTEND=noninteractive
 
-# environment.yml has pdbfixer, numpy, mdtraj and openmm
-ADD environment.yml /tmp/environment.yml
-RUN conda env create -f /tmp/environment.yml
-RUN echo "source activate $(head -1 /tmp/environment.yml | cut -d' ' -f2)" > ~/.bashrc
-ENV PATH /opt/conda/envs/$(head -1 /tmp/environment.yml | cut -d' ' -f2)/bin:$PATH
+# The following line is important for singularity
+#RUN mkdir /scratch /work /home1 /gpfs /corral-repl /corral-tacc /data
 
-# These are okay outside environment.yml because they install to PATH
-# Perhaps better if inside yml?
-RUN conda install -c bioconda smina
-RUN conda install -c schrodinger pymol
-
-# To call APE-Gen as module
-RUN echo "export PYTHONPATH=$PYTHONPATH:/home/apegen" >> ~/.bashrc
-
-# To get nglview to work inside jupyter notebook
-#RUN echo "jupyter-nbextension enable --py --sys-prefix widgetsnbextension" >> ~/.bashrc
-#RUN echo "jupyter-nbextension enable nglview --py --sys-prefix" >> ~/.bashrc
-
-# use older version of Boost to avoid compilation problems with smina
 RUN apt-get update && \
     apt-get -y install \
         cmake \
@@ -52,20 +34,30 @@ RUN apt-get update && \
         wget \
         vim
 
+
+RUN ["/bin/bash", "-c", "wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"]
+RUN chmod 0755 Miniconda3-latest-Linux-x86_64.sh
+RUN ./Miniconda3-latest-Linux-x86_64.sh -b -p /conda
+ENV PATH "/conda/bin:$PATH"
+
+# environment.yml has pdbfixer, numpy, mdtraj and openmm
+ADD environment.yml /environment.yml
+RUN conda env create -f /environment.yml
+RUN echo "source activate apegen" >> ~/.bashrc
+ENV PATH "/conda/envs/apegen/bin:$PATH"
+
+# These are okay outside environment.yml because they install to PATH
+# Perhaps better if inside yml?
+RUN conda install -c bioconda smina
+RUN conda install -c schrodinger pymol
+RUN conda install -c bioconda autodock-vina
+
 # RCD
 RUN conda install -c intel mkl
-RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib/" >> ~/.bashrc
+ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/conda/lib/"
 RUN wget -qO- http://chaconlab.org`wget -qO- http://chaconlab.org/modeling/rcd/rcd-download|grep txz|grep uk-button| cut -f4 -d\"` | tar Jxf - && \
     cp RCD_v1.40_Linux_20190228/bin/rcd /usr/local/bin
 
-# Autodock Vina
-RUN wget -qO- http://vina.scripps.edu/download/autodock_vina_1_1_2_linux_x86.tgz | tar zxf - && \
-    mv autodock_vina_1_1_2_linux_x86/bin/vina* /usr/local/bin/ && \
-    rm -rf /autodock_vina_1_1_2_linux_x86
-
 RUN git clone https://github.com/KavrakiLab/APE-Gen.git
 
-# APE-Gen
-WORKDIR /home/apegen
-COPY . /home/apegen
 ENTRYPOINT ["bash"]

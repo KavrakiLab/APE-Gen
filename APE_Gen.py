@@ -426,7 +426,7 @@ def main(args):
                 #print i, d_a1, d_a2, energies[i]
 
                 if d_a1 < anchor_tol and d_a2 < anchor_tol and d_a3 < anchor_tol and d_a4 < anchor_tol:
-                    print(i)
+                    #print(i)
                     filtered_energies.append(energies[i])
                     filtered_indices.append(i) # indices used for naming full system confs
 
