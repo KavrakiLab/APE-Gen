@@ -765,7 +765,7 @@ class RefineThread(Thread):
         rescore_with_smina(folder_name + "/all_models.pdb", "../../../receptor.pdb", folder_name, self.doReceptorMinimization, self.flexible_residues, self.useSMINA)
 
 # Print iterations progress
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '*'):
     """
     Call in a loop to create terminal progress bar
     @params:
