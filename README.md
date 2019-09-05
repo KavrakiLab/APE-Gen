@@ -57,9 +57,10 @@
 ## Options help:
 
 ```
-usage: APE-Gen.py [-h] [-n NUM_CORES] [-l NUM_LOOPS] [-t RCD_DIST_TOL] [-r]
+usage: APE_Gen.py [-h] [-n NUM_CORES] [-l NUM_LOOPS] [-t RCD_DIST_TOL] [-r]
                   [-d] [-p] [-a ANCHOR_TOL] [-o] [-g NUM_ROUNDS]
-                  [-b {receptor_only,pep_and_recept}] [-s]
+                  [-b {receptor_only,pep_and_recept}] [-s] [--use_gpu]
+                  [--no_progress] [--clean_rcd]
                   peptide_input receptor_class
 
 Anchored Peptide-MHC Ensemble Generator
@@ -68,7 +69,8 @@ positional arguments:
   peptide_input         Sequence of peptide to dock or pdbfile of crystal
                         structure
   receptor_class        Class descriptor of MHC receptor. Use REDOCK along
-                        with crystal input to perform redocking.
+                        with crystal input to perform redocking. Or pass a PDB
+                        file with receptor
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -104,6 +106,10 @@ optional arguments:
                         receptor_only)
   -s, --min_with_smina  Minimize with SMINA instead of the default Vinardo
                         (default: False)
+  --use_gpu             Use GPU for OpenMM Minimization step (default: False)
+  --no_progress         Do not print progress bar (default: False)
+  --clean_rcd           Remove RCD folder at the end of each round (default:
+                        False)
 ```
 
 

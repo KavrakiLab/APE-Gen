@@ -85,6 +85,8 @@ def main(args):
     parser.add_argument("-b", "--pass_type", type=str, default='receptor_only', choices=['receptor_only', 'pep_and_recept'], help="When using multiple rounds, pass best scoring conformation across different rounds (choose either 'receptor_only' or 'pep_and_recept')")
     parser.add_argument("-s", "--min_with_smina", action="store_true", help='Minimize with SMINA instead of the default Vinardo')
     parser.add_argument("--use_gpu", action="store_true", help='Use GPU for OpenMM Minimization step')
+    parser.add_argument("--no_progress", action="store_true", help='Do not print progress bar')
+    parser.add_argument("--clean_rcd", action="store_true", help='Remove RCD folder at the end of each round')
 
     args = parser.parse_args(args)
 
@@ -105,6 +107,9 @@ def main(args):
     use_gpu = args.use_gpu
     if use_gpu: device = "OpenCL"
     else: device = "CPU"
+    no_progress = args.no_progress
+    printProgress = not no_progress
+    cleanRCD = args.clean_rcd
 
     print("Preparing peptide and MHC")
 
@@ -310,7 +315,7 @@ def main(args):
                         progress += int(check_output(["grep \"MODEL\" " + s + "/models_minimize.pdb | wc -l"], shell=True))
                 #progress = int(check_output(["for i in " + " ".join(folder_names) + "; do grep \"MODEL\" $i/models_minimize.pdb | wc -l; done | paste -sd+ | bc"], shell=True))
                 if progress == 0: continue
-                printProgressBar(progress, 100, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                if printProgress: printProgressBar(progress, 100, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
             #for t in threads: t.join()
 
@@ -487,7 +492,7 @@ def main(args):
                     call(["mkdir full_system_confs"], shell=True)
                     
                     for j, conf in enumerate(all_confs):
-                        printProgressBar(j+1, len(all_confs), prefix = 'Progress:', suffix = 'Complete', length = 50)
+                        if printProgress: printProgressBar(j+1, len(all_confs), prefix = 'Progress:', suffix = 'Complete', length = 50)
                         
                         if j not in filtered_indices: continue
                         #print(j)
@@ -600,7 +605,7 @@ def main(args):
 
                         #print(i, filenames[i-1], j, energy)
 
-                        printProgressBar((i-1)*10 + j, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                        if printProgress: printProgressBar((i-1)*10 + j, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
                         if energy < 0: 
                             min_filenames.append("min-" + complex_model)
@@ -611,7 +616,7 @@ def main(args):
                                 call(["rm " + complex_model + " min-" + complex_model], shell=True)
 
 
-                printProgressBar(len(filenames)*10, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                if printProgess: printProgressBar(len(filenames)*10, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
                 call(["mkdir openmm-minimized"], shell=True)
                 call(["rm complex-*.pdb"], shell=True)
@@ -622,6 +627,7 @@ def main(args):
 
                 os.chdir("..")
     
+        if cleanRCD: call(["rm -r RCD"], shell=True)
 
         os.chdir("..")
 
