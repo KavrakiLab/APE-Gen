@@ -2,6 +2,7 @@ name: apegen
 channels:
   - omnia
   - conda-forge
+  - salilab
 dependencies:
   - python=3
   - pdbfixer
@@ -9,3 +10,4 @@ dependencies:
   - mdtraj
   - openmm
   - biopython
+  - modeller

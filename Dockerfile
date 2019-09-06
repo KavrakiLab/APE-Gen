@@ -52,8 +52,6 @@ RUN conda install -c bioconda smina
 RUN conda install -c schrodinger pymol
 RUN conda install -c bioconda autodock-vina
 
-RUN conda install -c salilab modeller
-
 # RCD
 RUN conda install -c intel mkl
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/conda/lib/"
