@@ -132,12 +132,28 @@ optional arguments:
   - intel mkl may be needed (`conda install -c intel mkl`) and added to library path
 
 
-## Using Modeller scripts
+## Using Modeller script
 
-- Usage: `python model_receptor.py <fasta file containing alpha chain seq> <template PDB>`
-- Make sure all files are in the same directory
-- Will create 2 models and choose the best model according to MODELLER's DOPE score
-  - can change this parameter inside `model_receptor.py`
+```
+usage: model_receptor.py [-h] [-n NUM_MODELS]
+                         alpha_chain_seq_file template_pdb
+
+Homology Modeling of HLAs using Modeller
+
+positional arguments:
+  alpha_chain_seq_file  Fasta file containing the sequence of the alpha chain
+                        of HLA
+  template_pdb          PDB of the template HLA
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n NUM_MODELS, --num_models NUM_MODELS
+                        Number of models to sample with Modeller (default: 10)
+```
+
+- Requires Modeller and Biopython
+  - `conda install -c salilab modeller`
+  - `conda install -c conda-forge biopython`
 - Model with the best DOPE score is found in `best_model.pdb`
 - Example: `python model_receptor.py P01892.fasta 3I6L.pdb`
   - models HLA-A*02:01 using 3I6L as a template
