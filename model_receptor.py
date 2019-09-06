@@ -2,13 +2,19 @@ from subprocess import call
 import time
 import sys
 import os
-from modeller import *
-from modeller.automodel import *
+
 from Bio import pairwise2
 from Bio import SeqIO
 from Bio.PDB import *
 import re
 import argparse
+
+try:
+    from modeller import *
+    from modeller.automodel import *
+except:
+    print("Error with importing Modeller: Make sure license key is correct.")
+    sys.exit(0)
 
 defaults_location = os.path.dirname(os.path.abspath(__file__))
 
