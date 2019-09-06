@@ -95,7 +95,7 @@ def main(args):
     starttime = time.time()
     #call(["python -u  " + defaults_location + "/model-single-opt.py 2 >> log.txt"], shell=True)
     #call(["cp $(grep \"Top model\" log.txt | awk '{ print $3 }') best_model.pdb"], shell=True)
-    best_model, best_score = model_single_opt(2)
+    best_model, best_score = model_single_opt(num_models)
     call(["cp " + str(best_model) + " best_model.pdb"], shell=True)
     endtime = time.time()
     print("Homology modelling took " + str(endtime - starttime) + " seconds.")
