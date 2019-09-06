@@ -116,19 +116,19 @@ optional arguments:
 ## Installation instructions:
 
 1) install miniconda 
-	- https://conda.io/miniconda.html
+  - https://conda.io/miniconda.html
 
 2) using conda, install the following
-	- `conda install -c bioconda smina`
-	- `conda install -c omnia pdbfixer`
-	- `conda install -c conda-forge mdtraj`
-	- `conda install -c schrodinger pymol`
-	- `conda install -c bioconda autodock-vina`
-	- `conda install -c omnia -c conda-forge openmm`
+  - `conda install -c bioconda smina`
+  - `conda install -c omnia pdbfixer`
+  - `conda install -c conda-forge mdtraj`
+  - `conda install -c schrodinger pymol`
+  - `conda install -c bioconda autodock-vina`
+  - `conda install -c omnia -c conda-forge openmm`
 
 3) install RCD (v1.40)
-	- http://chaconlab.org/modeling/rcd/rcd-download
-	- make sure RCD is added to path so that `rcd` is a command in the terminal
+  - http://chaconlab.org/modeling/rcd/rcd-download
+  - make sure RCD is added to path so that `rcd` is a command in the terminal
   - intel mkl may be needed (`conda install -c intel mkl`) and added to library path
 
 
