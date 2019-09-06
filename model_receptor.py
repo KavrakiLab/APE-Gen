@@ -16,7 +16,7 @@ defaults_location = os.path.dirname(os.path.abspath(__file__))
 
 def main(args):
 
-    parser = argparse.ArgumentParser(description="Anchored Peptide-MHC Ensemble Generator", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description="Homology Modeling of HLAs using Modeller", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('alpha_chain_seq_file', type=str, nargs=1, help='Fasta file containing the sequence of the alpha chain of HLA')
     parser.add_argument('template_pdb', type=str, nargs=1, help='PDB of the template HLA')
 
