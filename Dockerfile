@@ -51,8 +51,8 @@ ENV PATH "/conda/envs/apegen/bin:$PATH"
 RUN conda install -c bioconda smina
 RUN conda install -c schrodinger pymol
 RUN conda install -c bioconda autodock-vina
+
 RUN conda install -c salilab modeller
-RUN conda install -c conda-forge biopython
 
 # RCD
 RUN conda install -c intel mkl
