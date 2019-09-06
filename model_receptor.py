@@ -8,6 +8,7 @@ from Bio import pairwise2
 from Bio import SeqIO
 from Bio.PDB import *
 import re
+import argparse
 
 defaults_location = os.path.dirname(os.path.abspath(__file__))
 
@@ -15,12 +16,26 @@ defaults_location = os.path.dirname(os.path.abspath(__file__))
 
 def main(args):
 
+    parser = argparse.ArgumentParser(description="Anchored Peptide-MHC Ensemble Generator", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('alpha_chain_seq_file', type=str, nargs=1, help='Fasta file containing the sequence of the alpha chain of HLA')
+    parser.add_argument('template_pdb', type=str, nargs=1, help='PDB of the template HLA')
+
+    parser.add_argument("-n", "--num_models", type=int, default=10, help='Number of models to sample with Modeller')
+
+    args = parser.parse_args(args)
+
+    alpha_chain_seq_file = args.alpha_chain_seq_file[0]
+    template_pdb = args.template_pdb[0]
+
+    num_models = args.num_models
+    
+
     print("Removing signal and transmembrane portions of alpha chain seq")
 
-    raw_seq = str(list(SeqIO.parse(args[0], "fasta"))[0].seq)
+    raw_seq = str(list(SeqIO.parse(alpha_chain_seq_file, "fasta"))[0].seq)
     
     parser = PDBParser()
-    structure = parser.get_structure('asfd', args[1])
+    structure = parser.get_structure('asfd', template_pdb)
     ppb = PPBuilder()
     for pp in ppb.build_peptides(structure):
         alpha_chain = str(pp.get_sequence())
@@ -50,7 +65,7 @@ def main(args):
     target_sequence += "/"
     # constant beta immunoglobin
     target_sequence += "MIQRTPKIQVYSRHPAENGKSNFLNCYVSGFHPSDIEVDLLKNGERIEKVEHSDLSFSKDWSFYLLYYTEFTPTEKDEYACRVNHVTLSQPKIVKWDRDM*" 
-    receptor_template = args[1]
+    receptor_template = template_pdb
 
     #log.verbose()
     #log.minimal()
