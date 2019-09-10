@@ -45,7 +45,7 @@ def main(args):
 
         supertypes = {}
         representatives = {}
-        f = open("/home/jayveerabella/Dropbox/temp/supertype_templates.csv", 'r')
+        f = open(defaults_location + "/supertype_templates.csv", 'r')
         for line in f:
             allele, supertype, isRep, pdbid = line.split(",")
             pdbid = pdbid[:4] # remove newline
