@@ -24,17 +24,74 @@ def main(args):
 
     parser = argparse.ArgumentParser(description="Homology Modeling of HLAs using Modeller", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('alpha_chain_seq_file', type=str, nargs=1, help='Fasta file containing the sequence of the alpha chain of HLA')
-    parser.add_argument('template_pdb', type=str, nargs=1, help='PDB of the template HLA')
+    parser.add_argument('template', type=str, nargs=1, help='PDB of the template HLA or name of HLA allele (ex. HLA-A*02:01). If allele name given, a template based on supertype will be chosen.')
 
     parser.add_argument("-n", "--num_models", type=int, default=10, help='Number of models to sample with Modeller')
 
     args = parser.parse_args(args)
 
     alpha_chain_seq_file = args.alpha_chain_seq_file[0]
-    template_pdb = args.template_pdb[0]
+    template = args.template[0]
 
     num_models = args.num_models
-    
+
+    if template[-4:] == ".pdb": 
+        print("Using user-inputted template PDB")
+        template_pdb = template
+    else:
+        allele_name = template
+        print("Allele to model:", allele_name)
+        allele_name = allele_name.replace(":", "")
+
+        supertypes = {}
+        representatives = {}
+        f = open("/home/jayveerabella/Dropbox/temp/supertype_templates.csv", 'r')
+        for line in f:
+            allele, supertype, isRep, pdbid = line.split(",")
+            pdbid = pdbid[:4] # remove newline
+            if supertype not in supertypes.keys():
+                supertypes[supertype] = []
+            supertypes[supertype].append(allele)
+            if isRep == "representative":
+                representatives[supertype] = (allele, pdbid)
+        f.close()
+
+        #for k in supertypes.keys():
+        #    if k != "Unclassified":
+        #        print(k, len(supertypes[k]), representatives[k])
+
+        foundAllele = False
+        for s in supertypes.keys():
+            if allele_name[4:] in supertypes[s]:
+                foundAllele = True
+                if s == "Unclassified":
+                    print("Allele is Unclassified: Using a template from the same serotype")
+                    if allele_name[4] == "A":
+                        template_allele, template_pdbcode = representatives["A02"]
+                    elif allele_name[4] == "B":
+                        template_allele, template_pdbcode = representatives["B07"]
+                    elif allele_name[4] == "C":
+                        template_allele, template_pdbcode = representatives["C00"]
+                    else:
+                        print("Error: Unrecognized Serotype")
+                        sys.exit(0)
+                else:
+                    print("Obtaining representative template from within supertype:")
+                    template_allele, template_pdbcode = representatives[s]
+                    print("Template allele, pdbcode:", template_allele, template_pdbcode)
+                break
+            elif allele_name[4] == "C":
+                foundAllele = True
+                print("Allele is from serotype C: Using representative template")
+                template_allele, template_pdbcode = representatives["C00"]
+                break
+                    
+        if not foundAllele:
+            print("Warning: Allele cannot be found in the internal database ... Defaulting to 2v2w.pdb")
+            template_pdbcode = "2v2w"
+
+        call(["python " + defaults_location + "/get_pMHC_pdb.py " + template_pdbcode], shell=True)
+        template_pdb = template_pdbcode + ".pdb"    
 
     print("Removing signal and transmembrane portions of alpha chain seq")
 
