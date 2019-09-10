@@ -9,6 +9,9 @@ from Bio.PDB import *
 import re
 import argparse
 
+import bs4
+import requests
+
 try:
     from modeller import *
     from modeller.automodel import *
@@ -23,14 +26,14 @@ defaults_location = os.path.dirname(os.path.abspath(__file__))
 def main(args):
 
     parser = argparse.ArgumentParser(description="Homology Modeling of HLAs using Modeller", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('alpha_chain_seq_file', type=str, nargs=1, help='Fasta file containing the sequence of the alpha chain of HLA')
-    parser.add_argument('template', type=str, nargs=1, help='PDB of the template HLA or name of HLA allele (ex. HLA-A*02:01). If allele name given, a template based on supertype will be chosen.')
+    parser.add_argument('alpha_chain_seq', type=str, nargs=1, help='Fasta file (.fasta) containing the sequence of the alpha chain of HLA or name of HLA allele (ex. HLA-A*02:01). If allele name given, the program will try to download the sequence from EMBL-EBI.')
+    parser.add_argument('template', type=str, nargs=1, help='PDB of the template HLA or name of HLA allele (ex. HLA-A*02:01). If allele name given, a template based on the allele\'s supertype (as defined in supertype_templates.csv) will be chosen.')
 
     parser.add_argument("-n", "--num_models", type=int, default=10, help='Number of models to sample with Modeller')
 
     args = parser.parse_args(args)
 
-    alpha_chain_seq_file = args.alpha_chain_seq_file[0]
+    alpha_chain_seq = args.alpha_chain_seq[0]
     template = args.template[0]
 
     num_models = args.num_models
@@ -96,7 +99,25 @@ def main(args):
 
     print("Removing signal and transmembrane portions of alpha chain seq")
 
-    raw_seq = str(list(SeqIO.parse(alpha_chain_seq_file, "fasta"))[0].seq)
+    if alpha_chain_seq[-6:] != ".fasta": # attempt to download
+
+        print("Attempting to Download sequence of allele", alpha_chain_seq)
+        page = requests.get("https://www.ebi.ac.uk/cgi-bin/ipd/imgt/hla/get_allele.cgi?" + alpha_chain_seq[4:])
+        soup = bs4.BeautifulSoup(page.content, 'lxml')
+
+        list_of_sequences = soup.findAll('pre')
+        if len(list_of_sequences) == 0:
+            print("Error: Allele could not be found in database")
+            sys.exit(0)
+
+        raw_str = str(soup.findAll('pre')[0])
+        raw_str = raw_str.replace("\n", "")
+        raw_str = raw_str.replace("<pre>", "")
+        raw_seq = raw_str.replace("</pre>", "")
+
+    else: 
+        alpha_chain_seq_file = alpha_chain_seq
+        raw_seq = str(list(SeqIO.parse(alpha_chain_seq_file, "fasta"))[0].seq)
     
     parser = PDBParser()
     structure = parser.get_structure('asfd', template_pdb)
