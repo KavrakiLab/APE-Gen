@@ -159,6 +159,7 @@ optional arguments:
   - `conda install -c salilab modeller`
   - `conda install -c conda-forge biopython`
   - `conda install -c anaconda beautifulsoup4`
+  - `conda install -c anaconda requests`
 - Model with the best DOPE score is found in `best_model.pdb`
 - Example: `python model_receptor.py P01892.fasta 3I6L.pdb`
   - models HLA-A*02:01 using 3I6L as a template
