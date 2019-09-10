@@ -135,15 +135,19 @@ optional arguments:
 ## Using Modeller script
 
 ```
-usage: model_receptor.py [-h] [-n NUM_MODELS]
-                         alpha_chain_seq_file template_pdb
+usage: model_receptor.py [-h] [-n NUM_MODELS] alpha_chain_seq template
 
 Homology Modeling of HLAs using Modeller
 
 positional arguments:
-  alpha_chain_seq_file  Fasta file containing the sequence of the alpha chain
-                        of HLA
-  template_pdb          PDB of the template HLA
+  alpha_chain_seq       Fasta file (.fasta) containing the sequence of the
+                        alpha chain of HLA or name of HLA allele (ex.
+                        HLA-A*02:01). If allele name given, the program will
+                        try to download the sequence from EMBL-EBI.
+  template              PDB of the template HLA or name of HLA allele (ex.
+                        HLA-A*02:01). If allele name given, a template based
+                        on the allele's supertype (as defined in
+                        supertype_templates.csv) will be chosen.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -151,13 +155,18 @@ optional arguments:
                         Number of models to sample with Modeller (default: 10)
 ```
 
-- Requires Modeller and Biopython
+- Requires Modeller, Biopython, and BeautifulSoup4
   - `conda install -c salilab modeller`
   - `conda install -c conda-forge biopython`
+  - `conda install -c anaconda beautifulsoup4`
 - Model with the best DOPE score is found in `best_model.pdb`
 - Example: `python model_receptor.py P01892.fasta 3I6L.pdb`
   - models HLA-A*02:01 using 3I6L as a template
     - 3I6L contains a model of HLA-A*24:02
+- Even simpler example: `python model_receptor.py HLA-A*02:01 HLA-A*02:01`
+  - First argument says that the sequence of `HLA-A*02:01` will be downloaded
+  - Second argument says that a template PDB will be downloaded based on a representative allele from the same supertype classification
+
 
 ## Using Docker file
 
