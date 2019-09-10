@@ -90,6 +90,7 @@ def main(args):
             print("Warning: Allele cannot be found in the internal database ... Defaulting to 2v2w.pdb")
             template_pdbcode = "2v2w"
 
+        print("Downloading " + template_pdbcode)
         call(["python " + defaults_location + "/get_pMHC_pdb.py " + template_pdbcode], shell=True)
         template_pdb = template_pdbcode + ".pdb"    
 
@@ -104,11 +105,26 @@ def main(args):
         alpha_chain = str(pp.get_sequence())
         break
 
-    beg_index = [m.start() for m in re.finditer(alpha_chain[:5], raw_seq)][0]
-    end_index = [m.start() for m in re.finditer(alpha_chain[-5:], raw_seq)][-1]
+    """
+    alignments = pairwise2.align.localxx(raw_seq, alpha_chain, penalize_end_gaps=False)
+    print(alignments[0])
+    #sys.exit(0)
 
-    #alignments = pairwise2.align.localxx(raw_seq[beg_index:end_index+1], alpha_chain)
-    #print(alignments[0])
+    print(alpha_chain[:10])
+    print(alpha_chain[-5:])
+    print(raw_seq)
+    
+    print(raw_seq[24:30])
+    sys.exit(0)
+
+    if alpha_chain[0] != "M":
+        beg_index = [m.start() for m in re.finditer(alpha_chain[:5], raw_seq)][0]
+    else:
+        beg_index = [m.start() for m in re.finditer(alpha_chain[1:6], raw_seq)][0]
+    """
+
+    beg_index = 24 # The signaling portion in the beginning appear to all be the same length
+    end_index = [m.start() for m in re.finditer(alpha_chain[-5:], raw_seq)][-1]
 
     target_sequence = raw_seq[beg_index:end_index+1]
 
