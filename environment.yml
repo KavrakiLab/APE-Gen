@@ -13,3 +13,4 @@ dependencies:
   - biopython
   - modeller
   - beautifulsoup4
+  - requests
