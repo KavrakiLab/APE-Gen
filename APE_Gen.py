@@ -616,7 +616,7 @@ def main(args):
                                 call(["rm " + complex_model + " min-" + complex_model], shell=True)
 
 
-                if printProgess: printProgressBar(len(filenames)*10, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                if printProgress: printProgressBar(len(filenames)*10, len(filenames)*10, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
                 call(["mkdir openmm-minimized"], shell=True)
                 call(["rm complex-*.pdb"], shell=True)
