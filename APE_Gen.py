@@ -631,7 +631,7 @@ def main(args):
 
         os.chdir("..")
 
-    sys.exit(0)
+    return #sys.exit(0)
 
 def rescore_with_smina(models, receptor, output_loc, doReceptorMinimization, flexible_residues, useSMINA):
 
