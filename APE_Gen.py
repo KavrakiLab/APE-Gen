@@ -500,6 +500,8 @@ def main(args):
                         call(["sed -i \"s/ A  / C  /g\" temp.pdb"], shell=True)
 
                         orig = md.load("receptor.pdb")
+                        
+                        """
                         call(["cp RCD/input/models/receptor" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdbqt ./receptor_part.pdb"], shell=True)
                         temp = md.load("receptor_part.pdb")
                         #orig_atoms = [a for a in orig.top.atoms]
@@ -524,6 +526,21 @@ def main(args):
                             else:
                                 orig.xyz[0, orig_atoms_in_residue_indices[element_offset[element_type]], :] = temp.xyz[0, i, :]
                                 element_offset[element_type] += 1
+                        """
+
+                        call(["python " + defaults_location + "/rename_atoms.py RCD/input/models/receptor" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdbqt"], shell=True)
+                        temp = md.load("receptor_part.pdb")
+                        #orig_atoms = [a for a in orig.top.atoms]
+                        temp_atoms = [a for a in temp.top.atoms]
+
+                        for i, temp_atom in enumerate(temp_atoms):
+                            dash_index = str(temp_atom).find('-')
+                            residue_name = str(temp_atom)[:dash_index]
+                            element_type = str(temp_atom)[dash_index+1:]
+                            residue_index = int(residue_name[3:]) - 1
+                            
+                            orig_atoms_in_residue_indices = orig.top.select("resid == " + str(residue_index) + " and name == " + element_type)
+                            orig.xyz[0, orig_atoms_in_residue_indices[0], :] = temp.xyz[0, i, :]
 
                         
                         orig.save_pdb("receptor_temp.pdb")
