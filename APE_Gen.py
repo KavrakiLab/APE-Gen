@@ -490,73 +490,44 @@ def main(args):
                     call([vina_location + " --input receptor_models_minimize.pdb --ligand receptor  >> vina.log 2>&1"], shell=True)
                     os.chdir("../../..")
                     call(["mkdir full_system_confs"], shell=True)
-                    
+
                     for j, conf in enumerate(all_confs):
-                        if printProgress: printProgressBar(j+1, len(all_confs), prefix = 'Progress:', suffix = 'Complete', length = 50)
+                        #if printProgress: printProgressBar(j+1, len(all_confs), prefix = 'Progress:', suffix = 'Complete', length = 50)
                         
                         if j not in filtered_indices: continue
-                        #print(j)
-                        conf.save_pdb("temp.pdb")
-                        call(["sed -i \"s/ A  / C  /g\" temp.pdb"], shell=True)
 
-                        orig = md.load("receptor.pdb")
+                        peptide_j = "temp" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdb"
+                        conf.save_pdb(peptide_j)
+                        call(["sed -i \"s/ A  / C  /g\" " + peptide_j], shell=True)
+
+
+                    array_splits = np.array_split(list(range(len(all_confs))), num_cores)
+                    folder_names = [str(s[0]) for s in array_splits]
+                    num_confs = len(all_confs)
+
+                    threads = []
+                    for loop_indices in array_splits:
+                        t = ReceptorThread(loop_indices, filtered_indices, model_indices, num_loops)
+                        threads.append(t)
+                        t.start()
+                    for t in threads: t.join()
+
+                    """
+                    for j in range(num_confs):
                         
-                        """
-                        call(["cp RCD/input/models/receptor" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdbqt ./receptor_part.pdb"], shell=True)
-                        temp = md.load("receptor_part.pdb")
-                        #orig_atoms = [a for a in orig.top.atoms]
-                        temp_atoms = [a for a in temp.top.atoms]
+                        if j not in filtered_indices: continue                        
 
-                        element_offset = {}
-                        prev_residue_name = ""
-                        for i, temp_atom in enumerate(temp_atoms):
-                            dash_index = str(temp_atom).find('-')
-                            residue_name = str(temp_atom)[:dash_index]
-                            element_type = str(temp_atom)[dash_index+1:]
-                            residue_index = int(residue_name[3:]) - 1
-                            if prev_residue_name != residue_name: 
-                                prev_residue_name = residue_name
-                                element_offset = {}
-                                element_offset["N"] = 1
-                                element_offset["O"] = 1
-                            orig_atoms_in_residue_indices = orig.top.select("resid == " + str(residue_index) + " and type == " + element_type)
-                            if not element_type in list(element_offset.keys()):
-                                orig.xyz[0, orig_atoms_in_residue_indices[0], :] = temp.xyz[0, i, :]
-                                element_offset[element_type] = 1
-                            else:
-                                orig.xyz[0, orig_atoms_in_residue_indices[element_offset[element_type]], :] = temp.xyz[0, i, :]
-                                element_offset[element_type] += 1
-                        """
-
-                        call(["python " + defaults_location + "/rename_atoms.py RCD/input/models/receptor" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdbqt"], shell=True)
-                        temp = md.load("receptor_part.pdb")
-                        #orig_atoms = [a for a in orig.top.atoms]
-                        temp_atoms = [a for a in temp.top.atoms]
-
-                        for i, temp_atom in enumerate(temp_atoms):
-                            dash_index = str(temp_atom).find('-')
-                            residue_name = str(temp_atom)[:dash_index]
-                            element_type = str(temp_atom)[dash_index+1:]
-                            residue_index = int(residue_name[3:]) - 1
-                            
-                            orig_atoms_in_residue_indices = orig.top.select("resid == " + str(residue_index) + " and name == " + element_type)
-                            orig.xyz[0, orig_atoms_in_residue_indices[0], :] = temp.xyz[0, i, :]
-
+                        receptor_j = "receptor" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdbqt"
+                        call(["cp RCD/input/models/" + receptor_j + " ."], shell=True)
                         
-                        orig.save_pdb("receptor_temp.pdb")
+                        call(["python " + defaults_location + "/rename_atoms.py " + receptor_j], shell=True) # get receptor_j.temp and receptor_j.complete
 
-                        call(["cat receptor_temp.pdb temp.pdb | sed \"/MODEL/d\" | sed \"/ENDMDL/d\" | sed \"/END/d\" > system.pdb"], shell=True)
-                        call(["cp system.pdb target.pdb"], shell=True)
-                        #call(["echo \"14\r\n1\r\" | " + gromacs_location + " -f system.pdb -ignh -o target.pdb > /dev/null 2>&1"], shell=True)
-                        #call(["pdbfixer system.pdb --output=target.pdb"], shell=True)
+                        complex_j = "target" + str(model_indices[j]).zfill( len(str(num_loops)) ) + ".pdb"
+                        call(["cat " + receptor_j + ".complete " + peptide_j + " | sed \"/MODEL/d\" | sed \"/ENDMDL/d\" | sed \"/END/d\" > " + complex_j], shell=True)
+                        call(["cp " + complex_j + " full_system_confs/" + str(j) + ".pdb"], shell=True)
+                        call(["rm " + peptide_j + " " + receptor_j + " " + complex_j + " " + receptor_j + ".temp " + receptor_j + ".complete"], shell=True)
+                    """
 
-                        call(["cp target.pdb full_system_confs/" + str(j) + ".pdb"], shell=True)
-
-                        #if model_indices[j] == min_model_index: call(["cp target.pdb min_energy_system.pdb"], shell=True)
-
-                        call(["rm temp.pdb receptor_part.pdb receptor_temp.pdb system.pdb target.pdb"], shell=True)
-
-                    
 
         # this comes last because calling md.rmsd centers the coordinates (messing up the alignment)
         all_confs = md.load("peptide_confs.pdb")
@@ -726,6 +697,35 @@ def get_conf(conf_loc, ref_top, selection, debug):
     new_x = md.Trajectory(new_xyz, ref_top)
     
     return new_x  
+
+
+class ReceptorThread(Thread):
+
+    def __init__(self, loop_indices, filtered_indices, model_indices, num_loops):
+        self.loop_indices = loop_indices
+        self.filtered_indices = filtered_indices
+        self.model_indices = model_indices
+        self.num_loops = num_loops
+        
+        Thread.__init__(self)
+
+    def run(self):
+        for j in self.loop_indices:
+            if j not in self.filtered_indices: continue 
+            print(j)                       
+
+            peptide_j = "temp" + str(self.model_indices[j]).zfill( len(str(self.num_loops)) ) + ".pdb"
+            receptor_j = "receptor" + str(self.model_indices[j]).zfill( len(str(self.num_loops)) ) + ".pdbqt"
+            call(["cp RCD/input/models/" + receptor_j + " ."], shell=True)
+            
+            call(["python " + defaults_location + "/rename_atoms.py " + receptor_j], shell=True) # get receptor_j.temp and receptor_j.complete
+
+            complex_j = "target" + str(self.model_indices[j]).zfill( len(str(self.num_loops)) ) + ".pdb"
+            call(["cat " + receptor_j + ".complete " + peptide_j + " | sed \"/MODEL/d\" | sed \"/ENDMDL/d\" | sed \"/END/d\" > " + complex_j], shell=True)
+            call(["cp " + complex_j + " full_system_confs/" + str(j) + ".pdb"], shell=True)
+            call(["rm " + peptide_j + " " + receptor_j + " " + complex_j + " " + receptor_j + ".temp " + receptor_j + ".complete"], shell=True)
+
+            
 
 class RefineThread(Thread):
 

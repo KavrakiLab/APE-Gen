@@ -17,11 +17,14 @@ residue_atom_names = {"ARG":['CA', 'C', 'CB', 'CG', 'CD', 'NE', 'CZ', 'NH1', 'NH
                       "MET":['CA', 'C', 'CB', 'CG', 'SD', 'CE'],
                       }
 
-call(["cp " + sys.argv[1] + " receptor_part.pdb"], shell=True)
-call(["grep \"CONECT\" receptor_part.pdb > temp_conect"], shell=True)
+
+new_file_name = sys.argv[1] + ".temp" #"receptor_part.pdb"
+new_connect_file_name = sys.argv[1] + ".connect" #"temp_conect"
+call(["cp " + sys.argv[1] + " " + new_file_name], shell=True)
+call(["grep \"CONECT\" " + new_file_name + " > " + new_connect_file_name], shell=True)
 
 conect_lines = []
-f = open("temp_conect", 'r')
+f = open(new_connect_file_name, 'r')
 for line in f: conect_lines.append(line)
 f.close()
 
@@ -67,7 +70,7 @@ for residue_index,residue in enumerate(residues):
 			elif len(new_atom_name) == 3: space_to_residue_name = " "
 			new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-			call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+			call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 			name_index += 1
 
 	else:
@@ -92,7 +95,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 		elif curr_residue_name == "ASN":
 
@@ -116,7 +119,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 		elif curr_residue_name == "GLN":
 
@@ -140,7 +143,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 		elif curr_residue_name == "ILE":
 
@@ -183,7 +186,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 		elif curr_residue_name == "HIS":
 
@@ -252,7 +255,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 		elif curr_residue_name == "PRO":
 
@@ -274,7 +277,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 		elif curr_residue_name == "PHE":
 
@@ -350,7 +353,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 				
 		elif curr_residue_name == "TYR":
 
@@ -422,7 +425,7 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 
 		elif curr_residue_name == "TRP":
@@ -539,11 +542,31 @@ for residue_index,residue in enumerate(residues):
 				elif len(new_atom_name) == 3: space_to_residue_name = " "
 				new_line = line[:11] + "  " + new_atom_name + space_to_residue_name + curr_residue_name
 
-				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" receptor_part.pdb"], shell=True)
+				call(["sed -i \"s/" + old_line + "/" + new_line + "/g\" " + new_file_name], shell=True)
 
 
 
-call(["rm temp_conect"], shell=True)
+call(["rm " + new_connect_file_name], shell=True)
+
+import mdtraj as md
+
+orig = md.load_pdb("receptor.pdb")
+
+temp = md.load_pdb(new_file_name)
+#orig_atoms = [a for a in orig.top.atoms]
+temp_atoms = [a for a in temp.top.atoms]
+
+for i, temp_atom in enumerate(temp_atoms):
+    dash_index = str(temp_atom).find('-')
+    residue_name = str(temp_atom)[:dash_index]
+    element_type = str(temp_atom)[dash_index+1:]
+    residue_index = int(residue_name[3:]) - 1
+    
+    orig_atoms_in_residue_indices = orig.top.select("resid == " + str(residue_index) + " and name == " + element_type)
+    orig.xyz[0, orig_atoms_in_residue_indices[0], :] = temp.xyz[0, i, :]
+
+
+orig.save_pdb(sys.argv[1] + ".complete")
 
 sys.exit(0)
 
