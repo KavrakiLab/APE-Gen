@@ -169,7 +169,7 @@ optional arguments:
   - Second argument says that a template PDB will be downloaded based on a representative allele from the same supertype classification
 
 
-## Using Docker file
+## Building and Running Docker file
 
 - Build: `docker build -t apegen .`
 - Run: `docker run -it apegen`
@@ -179,4 +179,22 @@ optional arguments:
   - `docker run -it -p 8888:8888 apegen`
   -  `./setup_notebook.sh`
   - `jupyter notebook --no-browser --ip 0.0.0.0 --allow-root`
+
+## Instructions to run Minimal Example with Docker
+
+- Open a Terminal
+- Pull image from Docker hub: `docker pull jayab867/apegen:v2.0`
+- Go to the directory where you would like the APE-Gen results to be saved
+- Create a container that links the current working directory to a directory in the container called `/data`
+  - `docker run -it --rm -v $(pwd):/data --workdir "/data" jayab867/apegen:v2.0`
+- Run APE-Gen: `python /APE-Gen/APE_Gen.py LLWTLVVLL HLA-A*24:02`
+- Exit the container with Ctrl-D
+- There will be a number of folders which contain the results for each round of APE-Gen 
+  - Default is one round: so a single folder in this example called `0/`
+  - In each folder:
+    - The best scoring conformation for each round is called `min_energy_system.pdb` 
+    - The whole ensemble generated is located in `full_system_confs/`
+
+
+
 
