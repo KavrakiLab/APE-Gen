@@ -162,23 +162,12 @@ optional arguments:
   - `conda install -c anaconda requests`
 - Model with the best DOPE score is found in `best_model.pdb`
 - Example: `python model_receptor.py P01892.fasta 3I6L.pdb`
+  - Requires license key
   - models HLA-A*02:01 using 3I6L as a template
     - 3I6L contains a model of HLA-A*24:02
 - Even simpler example: `python model_receptor.py HLA-A*02:01 HLA-A*02:01`
   - First argument says that the sequence of `HLA-A*02:01` will be downloaded
   - Second argument says that a template PDB will be downloaded based on a representative allele from the same supertype classification
-
-
-## Building and Running Docker file
-
-- Build: `docker build -t apegen .`
-- Run: `docker run -it apegen`
-- Minimal example: `python APE_Gen.py LLWTLVVLL HLA-A*02:01 -o`
-- Modeller still needs to be installed (along with obtaining license key) 
-- To use jupyter notebook:
-  - `docker run -it -p 8888:8888 apegen`
-  -  `./setup_notebook.sh`
-  - `jupyter notebook --no-browser --ip 0.0.0.0 --allow-root`
 
 ## Instructions to run Minimal Example with Docker
 
