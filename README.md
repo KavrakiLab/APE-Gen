@@ -176,7 +176,7 @@ optional arguments:
 - Go to the directory where you would like the APE-Gen results to be saved
 - Create a container that links the current working directory to a directory in the container called `/data`
   - `docker run -it --rm -v $(pwd):/data --workdir "/data" jayab867/apegen:v2.0`
-- Run APE-Gen: `python /APE-Gen/APE_Gen.py LLWTLVVLL HLA-A*24:02`
+- Run APE-Gen: `python /APE-Gen/APE_Gen.py QFKDNVILL HLA-A*24:02`
 - Exit the container with Ctrl-D
 - There will be a number of folders which contain the results for each round of APE-Gen 
   - Default is one round: so a single folder in this example called `0/`
