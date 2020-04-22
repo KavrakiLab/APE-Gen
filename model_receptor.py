@@ -85,7 +85,7 @@ def main(args):
                 break
             elif allele_name[4] == "C":
                 foundAllele = True
-                print("Allele is from serotype C: Using representative template")
+                print("This is an HLA-C allele: Using representative template")
                 template_allele, template_pdbcode = representatives["C00"]
                 break
                     
